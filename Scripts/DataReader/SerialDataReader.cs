@@ -13,27 +13,51 @@ namespace LocomotionStateMachine
         public string COMPort;
         private SerialPort _mainSerialPort;
         private int _bandrate = 115200;
-
-        public List<int> footSGdata = new List<int>();
         private float _initClock = 0.0f;
         Thread myThread;
+        
+        // filter
 
-        public static Action<StepType, int> OnValueChange;
+        public static Action<DeviceType, int> OnValueChange;
         
         private void OnEnable()
         {
             Invoke("Init", _initClock);
         }
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Q))
+                OnValueChange?.Invoke(DeviceType.LeftToe, 60);
+            else if (Input.GetKeyUp(KeyCode.Q))
+                OnValueChange?.Invoke(DeviceType.LeftToe, 800);
+            if (Input.GetKeyDown(KeyCode.A))
+                OnValueChange?.Invoke(DeviceType.LeftHeel, 60);
+            else if (Input.GetKeyUp(KeyCode.A))
+                OnValueChange?.Invoke(DeviceType.LeftHeel, 800);
+            if (Input.GetKeyDown(KeyCode.W))
+                OnValueChange?.Invoke(DeviceType.RightToe, 60);
+            else if (Input.GetKeyUp(KeyCode.W))
+                OnValueChange?.Invoke(DeviceType.RightToe, 800);
+            if (Input.GetKeyDown(KeyCode.S))
+                OnValueChange?.Invoke(DeviceType.RightHeel, 60);
+            else if (Input.GetKeyUp(KeyCode.S))
+                OnValueChange?.Invoke(DeviceType.RightHeel, 800);
+        }
         public override void Init()
         {
-            _mainSerialPort = new SerialPort(COMPort, _bandrate);
-            _mainSerialPort.Open();
             myThread = new Thread(new ThreadStart(Read));
             myThread.Start();
         }
-
         public override void Read()
         {
+            try{
+                _mainSerialPort = new SerialPort(COMPort, _bandrate);
+                _mainSerialPort.Open();
+            }
+            catch(InvalidCastException e)
+            {
+                Debug.LogWarning(e.Message);
+            }
             while (myThread.IsAlive && _mainSerialPort.IsOpen)        // if serial is open then constantly read the line
             {
                 try
@@ -44,13 +68,13 @@ namespace LocomotionStateMachine
                     int heel = int.Parse(getCommandLine[2]);
                     if (foot == 'R')
                     {
-                        OnValueChange?.Invoke(StepType.RightShoeBall, ball);
-                        OnValueChange?.Invoke(StepType.RightShoeBall, heel);
+                        OnValueChange?.Invoke(DeviceType.RightToe, ball);
+                        OnValueChange?.Invoke(DeviceType.RightToe, heel);
                     }
                     else
                     {
-                        OnValueChange?.Invoke(StepType.LeftShoeBall, ball);
-                        OnValueChange?.Invoke(StepType.LeftShoeBall, heel);
+                        OnValueChange?.Invoke(DeviceType.LeftToe, ball);
+                        OnValueChange?.Invoke(DeviceType.LeftToe, heel);
                     }
                 }
                 catch (InvalidCastException e)
@@ -66,7 +90,6 @@ namespace LocomotionStateMachine
             if (myThread.IsAlive)
                 myThread.Abort();
         }
-
         private void OnApplicationQuit()
         {
             Quit();
