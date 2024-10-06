@@ -5,7 +5,7 @@ using DG.Tweening;
 
 namespace LocomotionStateMachine
 {
-    public class Fowarding : LocomotionState
+    public class Forwarding : LocomotionState
     {
         public float MoveDuration = 0.001f;
         public float Distance = 1f;
