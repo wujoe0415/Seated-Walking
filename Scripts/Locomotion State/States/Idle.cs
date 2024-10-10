@@ -7,7 +7,7 @@ namespace LocomotionStateMachine
     {
         public override void StateMovement()
         {
-            Debug.Log("Idle");
+            //Debug.Log("Idle");
         }
     }
 }

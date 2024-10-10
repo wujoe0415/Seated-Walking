@@ -8,7 +8,7 @@ namespace LocomotionStateMachine
     public class Forwarding : LocomotionState
     {
         public float MoveDuration = 0.001f;
-        public float Distance = 1f;
+        public float Distance = 0.1f;
         public override void StateMovement()
         {
             Debug.Log("Forwarding");

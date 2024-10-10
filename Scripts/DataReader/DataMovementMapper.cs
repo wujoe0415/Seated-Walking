@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,97 +13,157 @@ namespace LocomotionStateMachine {
         RightHeel = 3,
     }
     [System.Serializable]
+    [System.Flags]
     public enum Movement
     {
-        Raise = 0,
-        Lower = 1,
+        Ground = 1,
+        Hang = 2,
+        Step = 4,
+        Raise = 8,
     }
     [System.Serializable]
     public class ShoeState
     {
         public DeviceType Device;
-        public Movement Movement;
+        public bool IsDown;
         public float Time;
-        public ShoeState(DeviceType device, Movement movement, float time)
+        public ShoeState(DeviceType device, bool isDown, float time)
         {
             Device = device;
-            Movement = movement;
+            IsDown = isDown;
             Time = time;
         }
     }
+    [System.Serializable]
+    public class MovementEnumerator{
+        public Movement LeftToe;
+        public Movement LeftHeel;
+        public Movement RightToe;
+        public Movement RightHeel;
+        public MovementEnumerator()
+        {
+            LeftToe = Movement.Ground | Movement.Hang | Movement.Step;
+            LeftHeel = Movement.Ground | Movement.Hang | Movement.Step;
+            RightToe = Movement.Ground | Movement.Hang | Movement.Step;
+            RightHeel = Movement.Ground | Movement.Hang | Movement.Step;
+        }
+    }
+    public class HistoryRecorder
+    {
+        public static DeviceType s_LastToeStep;
+        public static DeviceType s_LastHeelStep;
+        public static DeviceType s_LastLeftShoeStep;
+        public static DeviceType s_LastRightShoeStep;
+
+        public static void UpdateStep(DeviceType d)
+        {
+            if (d == DeviceType.LeftToe)
+            {
+                s_LastToeStep = d;
+                s_LastLeftShoeStep = d;
+            }
+            else if (d == DeviceType.LeftHeel)
+            {
+                s_LastHeelStep = d;
+                s_LastLeftShoeStep = d;
+            }
+            else if (d == DeviceType.RightToe)
+            {
+                s_LastToeStep = d;
+                s_LastRightShoeStep = d;
+            }
+            else
+            {
+                s_LastHeelStep = d;
+                s_LastRightShoeStep = d;
+            }
+        }
+    }
+
+
     public class DataMovementMapper : MonoBehaviour
     {
-        [HideInInspector]
-        public ShoeState[] CurrentShoeStates = new ShoeState[4];
-        public MovementEnumerator HistoryShoeStates;
+        //[HideInInspector]
+        public ShoeState[] ShoeStates = new ShoeState[4];
+        public MovementEnumerator PreviousShoesStates;
+        public MovementEnumerator CurrentShoesStates;
         public int RaiseThreshold = 500;
-        private float _stepThreshold = 4.5f;
+        public float StepThreshold = 5f;
+        public HistoryRecorder HistoryStates;
         //public DataReader[] SerialDataReader;
+
+        public Action<MovementEnumerator, MovementEnumerator> OnChangeState;
 
         private void Awake()
         {
-            CurrentShoeStates[0] = new ShoeState(DeviceType.LeftToe, Movement.Lower, 0);
-            CurrentShoeStates[1] = new ShoeState(DeviceType.LeftHeel, Movement.Lower, 0);
-            CurrentShoeStates[2] = new ShoeState(DeviceType.RightToe, Movement.Lower, 0);
-            CurrentShoeStates[3] = new ShoeState(DeviceType.RightHeel, Movement.Lower, 0);
+            ShoeStates[0] = new ShoeState(DeviceType.LeftToe, true, 0);
+            ShoeStates[1] = new ShoeState(DeviceType.LeftHeel, true, 0);
+            ShoeStates[2] = new ShoeState(DeviceType.RightToe, true, 0);
+            ShoeStates[3] = new ShoeState(DeviceType.RightHeel, true, 0);
         }
         private bool[] _currentChanges = new bool[4]; 
         public void OnEnable()
         {
             SerialDataReader.OnValueChange += UpdateValue;
-            StartCoroutine(StepMonitor());
         }
         public void OnDisable()
         {
             SerialDataReader.OnValueChange -= UpdateValue;
-            StopAllCoroutines();
         }
         public void UpdateValue(DeviceType s, int value)
         {
-            HistoryShoeStates = HistoryShoeStates | EncodingState(CurrentShoeStates[0], CurrentShoeStates[1], CurrentShoeStates[2], CurrentShoeStates[3]);
+            ShoeStates[(int)s].Time += Time.deltaTime;
+            Movement previousValue = GetDeviceMovement(s);
 
-            CurrentShoeStates[(int)s].Time += Time.deltaTime;
-            Movement previousValue = CurrentShoeStates[(int)s].Movement;
-            CurrentShoeStates[(int)s].Movement = value > RaiseThreshold ? Movement.Raise : Movement.Lower;
-            if (previousValue != CurrentShoeStates[(int)s].Movement)
-                CurrentShoeStates[(int)s].Time = 0;
-            
-        }
+            if (ShoeStates[(int)s].IsDown != value < RaiseThreshold)
+                ShoeStates[(int)s].Time = 0;
+            ShoeStates[(int)s].IsDown = value < RaiseThreshold;
 
-        private MovementEnumerator EncodingState(ShoeState lt, ShoeState lh, ShoeState rt, ShoeState rh)
-        {
-            return (MovementEnumerator)(1 << (2 << (int)lt.Movement) >> (int)lt.Movement) |
-                   (MovementEnumerator)(1 << (2 << (int)lh.Movement) >> (int)lh.Movement) |
-                   (MovementEnumerator)(1 << (2 << (int)rt.Movement) >> (int)rt.Movement) |
-                   (MovementEnumerator)(1 << (2 << (int)rh.Movement) >> (int)rh.Movement);
-        }
-
-        private IEnumerator StepMonitor()
-        {
-            while (true)
+            if (value > RaiseThreshold) 
             {
-                if (CurrentShoeStates[0].Time > _stepThreshold)
-                    HistoryShoeStates &= ~(MovementEnumerator)512; // no step
-                else if (CurrentShoeStates[0].Movement == Movement.Lower && CurrentShoeStates[0].Time < _stepThreshold)
-                    HistoryShoeStates |= (MovementEnumerator)512;  // step
-
-                if (CurrentShoeStates[1].Time > _stepThreshold)
-                    HistoryShoeStates &= ~(MovementEnumerator)1024;
-                else if (CurrentShoeStates[1].Movement == Movement.Lower && CurrentShoeStates[1].Time < _stepThreshold)
-                    HistoryShoeStates |= (MovementEnumerator)1024;
-
-                if (CurrentShoeStates[2].Time > _stepThreshold)
-                    HistoryShoeStates &= ~(MovementEnumerator)2048;
-                else if (CurrentShoeStates[2].Movement == Movement.Lower && CurrentShoeStates[2].Time < _stepThreshold)
-                    HistoryShoeStates |= (MovementEnumerator)2048;
-                
-                if (CurrentShoeStates[3].Time > _stepThreshold)
-                    HistoryShoeStates &= ~(MovementEnumerator)4096;
-                else if (CurrentShoeStates[3].Movement == Movement.Lower && CurrentShoeStates[3].Time < _stepThreshold)
-                    HistoryShoeStates |= (MovementEnumerator)4096;
-                    
-                yield return null;
+                if (ShoeStates[(int)s].Time > StepThreshold)
+                    SetDeviceMovement(s, Movement.Hang);
+                else
+                    SetDeviceMovement(s, Movement.Raise);
             }
+            else if (value < RaiseThreshold)
+            {
+                if (ShoeStates[(int)s].Time > StepThreshold)
+                    SetDeviceMovement(s, Movement.Ground);
+                else
+                    SetDeviceMovement(s, Movement.Step);
+            }
+            
+            // Change state
+            if (previousValue != GetDeviceMovement(s))
+            {
+                OnChangeState?.Invoke(PreviousShoesStates, CurrentShoesStates);
+                if (GetDeviceMovement(s) == Movement.Step)
+                    HistoryRecorder.UpdateStep(s);
+                PreviousShoesStates = CurrentShoesStates;
+            }
+        }
+        public Movement GetDeviceMovement(DeviceType device)
+        {
+            if (device == DeviceType.LeftToe)
+                return CurrentShoesStates.LeftToe;
+            else if (device == DeviceType.LeftHeel)
+                return CurrentShoesStates.LeftHeel;
+            else if (device == DeviceType.RightToe)
+                return CurrentShoesStates.RightToe;
+            else
+                return CurrentShoesStates.RightHeel;
+        }
+        public void SetDeviceMovement(DeviceType device, Movement movement)
+        {
+            if (device == DeviceType.LeftToe)
+                CurrentShoesStates.LeftToe = movement;
+            else if (device == DeviceType.LeftHeel)
+                CurrentShoesStates.LeftHeel = movement;
+            else if (device == DeviceType.RightToe)
+                CurrentShoesStates.RightToe = movement;
+            else
+                CurrentShoesStates.RightHeel = movement;
         }
     }
 }

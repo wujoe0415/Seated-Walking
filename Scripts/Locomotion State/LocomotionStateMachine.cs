@@ -10,6 +10,7 @@ namespace LocomotionStateMachine
 
         public List<LocomotionState> StateGraph = new List<LocomotionState>();
 
+        public LocomotionState RootState;
         public LocomotionState CurrentState;
         public List<string> StateHistory = new List<string>();
 
@@ -17,25 +18,25 @@ namespace LocomotionStateMachine
         private float _idleTimer = 0f;
         private void OnEnable()
         {
-            CurrentState = StateGraph[0];
+            if (RootState == null)
+                RootState = StateGraph[0];
+            CurrentState = RootState;
+            MovementMapper.OnChangeState += ChangeState;
         }
-        private void Update()
+        private void OnDisable()
         {
-            for (int i = 0; i < MovementMapper.CurrentShoeStates.Length; i++)
-            {
-                ChangeState(MovementMapper.HistoryShoeStates, MovementMapper.CurrentShoeStates[i].Device, MovementMapper.CurrentShoeStates[i].Movement, MovementMapper.CurrentShoeStates[i].Time);
-            }
+            MovementMapper.OnChangeState -= ChangeState;
         }
-        public void ChangeState(MovementEnumerator lastState, DeviceType inputDevice, Movement inputMovement, float inputTime)
+
+        public void ChangeState(MovementEnumerator lastState, MovementEnumerator currentState)
         {
-            string state = CurrentState.State; 
-            CurrentState = (LocomotionState)CurrentState.ChangeState(lastState, inputDevice, inputMovement, inputTime);
-            
-            if (state != CurrentState.State) // Change State
-            {
+            string state = CurrentState.State;
+            LocomotionState nextState = CurrentState.ChangeState(lastState, currentState);
+            if (nextState != null) {
+                CurrentState = nextState;
                 StateHistory.Add(state);
-                CurrentState.StateMovement(); // TODO: Check whether call when changing state
                 _idleTimer = 0f;
+                CurrentState.StateMovement(); // TODO: Check whether call when changing state
             }
             else
             {

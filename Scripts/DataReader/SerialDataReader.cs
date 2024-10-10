@@ -19,29 +19,35 @@ namespace LocomotionStateMachine
         // filter
 
         public static Action<DeviceType, int> OnValueChange;
-        
+
         private void OnEnable()
         {
             Invoke("Init", _initClock);
+            StartCoroutine(KeyboardSimulator());
         }
-        private void Update()
+            
+        private IEnumerator KeyboardSimulator()
         {
-            if (Input.GetKeyDown(KeyCode.Q))
-                OnValueChange?.Invoke(DeviceType.LeftToe, 60);
-            else if (Input.GetKeyUp(KeyCode.Q))
-                OnValueChange?.Invoke(DeviceType.LeftToe, 800);
-            if (Input.GetKeyDown(KeyCode.A))
-                OnValueChange?.Invoke(DeviceType.LeftHeel, 60);
-            else if (Input.GetKeyUp(KeyCode.A))
-                OnValueChange?.Invoke(DeviceType.LeftHeel, 800);
-            if (Input.GetKeyDown(KeyCode.W))
-                OnValueChange?.Invoke(DeviceType.RightToe, 60);
-            else if (Input.GetKeyUp(KeyCode.W))
-                OnValueChange?.Invoke(DeviceType.RightToe, 800);
-            if (Input.GetKeyDown(KeyCode.S))
-                OnValueChange?.Invoke(DeviceType.RightHeel, 60);
-            else if (Input.GetKeyUp(KeyCode.S))
-                OnValueChange?.Invoke(DeviceType.RightHeel, 800);
+            while(true)
+            {
+                if (Input.GetKey(KeyCode.Q))
+                    OnValueChange?.Invoke(DeviceType.LeftToe, 60);
+                else
+                    OnValueChange?.Invoke(DeviceType.LeftToe, 800);
+                if (Input.GetKey(KeyCode.A))
+                    OnValueChange?.Invoke(DeviceType.LeftHeel, 60);
+                else
+                    OnValueChange?.Invoke(DeviceType.LeftHeel, 800);
+                if (Input.GetKey(KeyCode.W))
+                    OnValueChange?.Invoke(DeviceType.RightToe, 60);
+                else
+                    OnValueChange?.Invoke(DeviceType.RightToe, 800);
+                if (Input.GetKey(KeyCode.S))
+                    OnValueChange?.Invoke(DeviceType.RightHeel, 60);
+                else
+                    OnValueChange?.Invoke(DeviceType.RightHeel, 800);
+                yield return null;
+            }
         }
         public override void Init()
         {
