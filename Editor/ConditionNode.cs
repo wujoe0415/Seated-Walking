@@ -1,5 +1,6 @@
 using System;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
@@ -20,12 +21,12 @@ namespace LocomotionStateMachine
             base.Type = NodeType.Condition;
             Condition = condition;
 
-            mainContainer.Add(new Label("Previous Movement"));
-            mainContainer.Add(CreateMovementEnumeratorUI(Condition.PreviousMovement));
+            //mainContainer.Add(new Label("Previous Movement"));
+            //mainContainer.Add(CreateMovementEnumeratorUI(Condition.PreviousMovement));
 
             // UI for TriggerMovement (MovementEnumerator)
             mainContainer.Add(new Label("Trigger Movement"));
-            mainContainer.Add(CreateMovementEnumeratorUI(Condition.TriggerMovement));
+            mainContainer.Add(CreateMovementEnumeratorUI());
 
             // Dropdown for LastDeviceState
             EnumField lastStateField = new EnumField("Last Device State", Condition.LastDeviceState);
@@ -55,17 +56,17 @@ namespace LocomotionStateMachine
             RefreshPorts();
             RefreshExpandedState();
         }
-        private VisualElement CreateMovementEnumeratorUI(MovementEnumerator movementEnumerator)
+        private VisualElement CreateMovementEnumeratorUI()
         {
             // Container for MovementEnumerator
             VisualElement container = new VisualElement();
             container.style.paddingLeft = 10;
 
             // Add movement fields
-            container.Add(CreateMovementField("Left Toe", movementEnumerator.LeftToe, newValue => movementEnumerator.LeftToe |= newValue));
-            container.Add(CreateMovementField("Left Heel", movementEnumerator.LeftHeel, newValue => movementEnumerator.LeftHeel |= newValue));
-            container.Add(CreateMovementField("Right Toe", movementEnumerator.RightToe, newValue => movementEnumerator.RightToe |= newValue));
-            container.Add(CreateMovementField("Right Heel", movementEnumerator.RightHeel, newValue => movementEnumerator.RightHeel |= newValue));
+            container.Add(CreateMovementField("Left Toe", Condition.TriggerMovement.LeftToe, newValue => Condition.TriggerMovement.LeftToe = newValue));
+            container.Add(CreateMovementField("Left Heel", Condition.TriggerMovement.LeftHeel, newValue => Condition.TriggerMovement.LeftHeel = newValue));
+            container.Add(CreateMovementField("Right Toe", Condition.TriggerMovement.RightToe, newValue => Condition.TriggerMovement.RightToe = newValue));
+            container.Add(CreateMovementField("Right Heel", Condition.TriggerMovement.RightHeel, newValue => Condition.TriggerMovement.RightHeel = newValue));
 
             return container;
         }
@@ -75,7 +76,7 @@ namespace LocomotionStateMachine
             fieldContainer.style.flexDirection = FlexDirection.Row;
 
             Label fieldLabel = new Label(label);
-            EnumField movementField = new EnumField(currentValue);
+            EnumFlagsField movementField = new EnumFlagsField(currentValue);
             movementField.RegisterValueChangedCallback(evt =>
             {
                 onValueChanged((Movement)evt.newValue);
