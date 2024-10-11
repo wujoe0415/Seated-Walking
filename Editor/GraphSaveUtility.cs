@@ -187,7 +187,7 @@ namespace LocomotionStateMachine
                 if (string.IsNullOrEmpty(guid)) continue;
 
                 var tmpNode = _locomotionContainer.ConditionNodeData.Where(x => x.NodeGUID == guid).First();
-                var tempCNode = _graphView.CreateNode(tmpNode.Condition, position);
+                var tempCNode = _graphView.CreateNode(tmpNode.Condition, position, typeof(ConditionNode));
                 tempCNode.GUID = guid;
                 _graphView.AddElement(tempCNode);
             }

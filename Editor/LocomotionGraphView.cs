@@ -120,9 +120,9 @@ namespace LocomotionStateMachine
         {
             AddElement(CreateNode(nodeName, position));
         }
-        public void CreateNewConditionNode(string nodeName, StateCondition condition, Vector2 position)
+        public void CreateNewConditionNode(string nodeName, StateCondition condition, Vector2 position, Type type)
         {
-            AddElement(CreateNode(condition, position));
+            AddElement(CreateNode(condition, position, type));
         }
         public void CreateNewTransitionNode(string nodeName, StateTransition.BooleanOperator transitionOperator, Vector2 position)
         {
@@ -152,9 +152,15 @@ namespace LocomotionStateMachine
             };
             return tempLocomotionNode;
         }
-        public ConditionNode CreateNode(StateCondition condition, Vector2 position)
+        public ConditionNode CreateNode(StateCondition condition, Vector2 position, Type type)
         {
-            ConditionNode tempConditionNode = new ConditionNode(condition, false);
+            // identify the type of the condition, it may be ConditionNode or TriggerNode
+            var tempConditionNode = type == typeof(ConditionNode)
+                                    ? new ConditionNode(condition, false): type == typeof(TriggerNode)
+                                    ? new TriggerNode(condition, false): 
+                                    new HistoryRecordNode(condition, false);
+
+            //ConditionNode tempConditionNode = new ConditionNode(condition, false);
             tempConditionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
             tempConditionNode.RefreshExpandedState();
             tempConditionNode.RefreshPorts();
