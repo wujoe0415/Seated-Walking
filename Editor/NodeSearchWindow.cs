@@ -32,8 +32,9 @@ namespace LocomotionStateMachine
                 new SearchTreeGroupEntry(new GUIContent("Condition"), 1),
                 new SearchTreeEntry(new GUIContent("Add Locomotion State", _indentationIcon)) { level = 1, userData = new LocomotionNode("Locomotion State", "Locomotion State", false)},
                 new SearchTreeEntry(new GUIContent("Add Transition", _indentationIcon)) { level = 1, userData = new TransitionNode(StateTransition.BooleanOperator.AND, false)},
+                new SearchTreeEntry(new GUIContent("Any Condition", _indentationIcon)) { level = 1, userData = new ConditionNode(new StateCondition(), false)},
                 new SearchTreeEntry(new GUIContent("Trigger Condition", _indentationIcon)) { level = 1, userData = new TriggerNode(new StateCondition(), false)},
-                new SearchTreeEntry(new GUIContent("Hold Still Duration Condition", _indentationIcon)) { level = 1, userData = new ConditionNode(new StateCondition(), false)},
+                new SearchTreeEntry(new GUIContent("Hold Still Duration Condition", _indentationIcon)) { level = 1, userData = new HoldStillNode(new StateCondition(), false)},
                 new SearchTreeEntry(new GUIContent("Record Track Condition", _indentationIcon)) { level = 1, userData = new HistoryRecordNode(new StateCondition(), false)},
                 new SearchTreeEntry(new GUIContent("Create Block", _indentationIcon)) { level = 1, userData = new Group() }
             };
@@ -56,6 +57,9 @@ namespace LocomotionStateMachine
                     return true;
                 case TriggerNode condition:
                     _graphView.CreateNewConditionNode("Trigger Node", new StateCondition(), graphMousePosition, typeof(TriggerNode));
+                    return true;
+                case HoldStillNode condition:
+                    _graphView.CreateNewConditionNode("Hold Still Node", new StateCondition(), graphMousePosition, typeof(HoldStillNode));
                     return true;
                 case ConditionNode condition:
                     _graphView.CreateNewConditionNode("Condition Node", new StateCondition(), graphMousePosition, typeof(ConditionNode));

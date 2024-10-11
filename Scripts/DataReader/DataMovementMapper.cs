@@ -42,10 +42,17 @@ namespace LocomotionStateMachine {
         public Movement RightHeel;
         public MovementEnumerator()
         {
-            LeftToe = Movement.Ground | Movement.Hang | Movement.Step;
-            LeftHeel = Movement.Ground | Movement.Hang | Movement.Step;
-            RightToe = Movement.Ground | Movement.Hang | Movement.Step;
-            RightHeel = Movement.Ground | Movement.Hang | Movement.Step;
+            LeftToe = Movement.Ground | Movement.Hang | Movement.Step | Movement.Raise;
+            LeftHeel = Movement.Ground | Movement.Hang | Movement.Step | Movement.Raise;
+            RightToe = Movement.Ground | Movement.Hang | Movement.Step | Movement.Raise;
+            RightHeel = Movement.Ground | Movement.Hang | Movement.Step | Movement.Raise;
+        }
+        public bool isAllEverything()
+        {
+            return LeftToe == (Movement.Ground | Movement.Hang | Movement.Step | Movement.Raise) &&
+                LeftHeel == (Movement.Ground | Movement.Hang | Movement.Step | Movement.Raise) &&
+                RightToe == (Movement.Ground | Movement.Hang | Movement.Step | Movement.Raise) &&
+                RightHeel == (Movement.Ground | Movement.Hang | Movement.Step | Movement.Raise);
         }
     }
     public class HistoryRecorder

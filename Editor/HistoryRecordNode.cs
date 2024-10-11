@@ -12,6 +12,7 @@ namespace LocomotionStateMachine
         {
             base.title = "Last Device State";
             // Dropdown for LastDeviceState
+            Condition.LastDeviceState = condition.LastDeviceState == HistoryState.Any?HistoryState.LastSteppedToe : condition.LastDeviceState;
             EnumField lastStateField = new EnumField("Condition", Condition.LastDeviceState);
             lastStateField.RegisterValueChangedCallback(evt =>
             {
@@ -20,7 +21,8 @@ namespace LocomotionStateMachine
             mainContainer.Add(lastStateField);
 
             // Dropdown for DeviceType
-            EnumField deviceTypeField = new EnumField("is", Condition.Device);
+            Condition.Device = condition.Device;
+            EnumField deviceTypeField = new EnumField("was", Condition.Device);
             deviceTypeField.RegisterValueChangedCallback(evt =>
             {
                 Condition.Device = (DeviceType)evt.newValue;

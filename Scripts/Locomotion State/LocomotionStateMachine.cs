@@ -31,7 +31,7 @@ namespace LocomotionStateMachine
         public void ChangeState(MovementEnumerator lastState, MovementEnumerator currentState)
         {
             string state = CurrentState.State;
-            LocomotionState nextState = CurrentState.ChangeState(lastState, currentState);
+            LocomotionState nextState = CurrentState.ChangeState(currentState);
             if (nextState != null) {
                 CurrentState = nextState;
                 StateHistory.Add(state);

@@ -17,15 +17,13 @@ namespace LocomotionStateMachine
     [System.Serializable]
     public class StateCondition
     {
-        public MovementEnumerator PreviousMovement;
         public MovementEnumerator TriggerMovement;
-
         public HistoryState LastDeviceState = HistoryState.Any;
         public DeviceType Device;
+        public float Duration = 0f;
 
         public StateCondition()
         {
-            PreviousMovement = new MovementEnumerator();
             TriggerMovement = new MovementEnumerator();
             LastDeviceState = HistoryState.Any;
             Device = DeviceType.LeftToe;
@@ -33,11 +31,11 @@ namespace LocomotionStateMachine
         //[Tooltip("Hold time in seconds")]
         //public float HoldTime = 0; // 0 means no hold time required, trigger immediately.
         
-        public bool IsSatisfied(MovementEnumerator l, MovementEnumerator c/*, float t*/)
+        public bool IsSatisfied(MovementEnumerator c/*, float t*/)
         {
-            Debug.Log($"Previous Movement {isMatch(PreviousMovement, l)}\nTrigger Movement {isMatch(TriggerMovement, c)}\n HistoryMovemnt {isMatchHistory()}");
+            Debug.Log($"Trigger Movement {isMatch(TriggerMovement, c)}\n HistoryMovemnt {isMatchHistory()}");
 
-            return isMatch(PreviousMovement, l) & isMatch(TriggerMovement, c) & isMatchHistory();
+            return isMatch(TriggerMovement, c) & isMatchHistory();
             //if (HasSatisfied)
             //    return HasSatisfied;
             //else{
@@ -115,12 +113,12 @@ namespace LocomotionStateMachine
         public LocomotionState NextState = new LocomotionState();
         public List<StateCondition> Condition = new List<StateCondition>();
         public BooleanOperator Operator = (BooleanOperator)0;
-        public bool CanTransit(MovementEnumerator l, MovementEnumerator c/*, float t*/)
+        public bool CanTransit(MovementEnumerator c/*, float t*/)
         {
-            bool flag = Condition[0].IsSatisfied(l, c);
+            bool flag = Condition[0].IsSatisfied(c);
             for (int i = 1; i < Condition.Count; i++)
             {
-                bool condiFlag = Condition[i].IsSatisfied(l, c);
+                bool condiFlag = Condition[i].IsSatisfied(c);
                 switch (Operator)
                 {
                     case BooleanOperator.AND:
@@ -159,12 +157,12 @@ namespace LocomotionStateMachine
         }
 
         public List<StateTransition> stateGraph = new List<StateTransition>();
-        public LocomotionState ChangeState(MovementEnumerator lastState, MovementEnumerator currentState)
+        public LocomotionState ChangeState(MovementEnumerator currentState)
         {
             //Debug.Log((DeviceType)inputDevice + " " + (Movement)inputMovement + " " + inputTime);
             foreach (StateTransition state in stateGraph)
             {
-                if (state.CanTransit(lastState, currentState/*inputDevice, inputMovement, inputTime*/))
+                if (state.CanTransit(currentState/*inputDevice, inputMovement, inputTime*/))
                 {
                     Debug.Log("Transit " + state.NextState.State);
                     return state.NextState;

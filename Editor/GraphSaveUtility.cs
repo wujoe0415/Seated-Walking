@@ -99,7 +99,7 @@ namespace LocomotionStateMachine
                         var tmpLNode = node as LocomotionNode;
                         guid = tmpLNode.GUID;
                         position = tmpLNode.GetPosition().position;
-                        locomotionContainerObject.LocomotionNodeData.Add(new LocomotionNodeData { NodeGUID = guid, Position = position, LocomotionStateName = tmpLNode.StateName }); 
+                        locomotionContainerObject.LocomotionNodeData.Add(new LocomotionNodeData { NodeGUID = guid, Position = position, LocomotionStateName = tmpLNode.StateName, LocomotionState = tmpLNode.LocomotionState as LocomotionState }); 
                         break;
                 }
             }
@@ -170,14 +170,15 @@ namespace LocomotionStateMachine
                 Vector2 position = perNode.Position;
                 if (string.IsNullOrEmpty(guid)) continue;
                 
-                var tmpNode = _locomotionContainer.LocomotionNodeData.Where(x => x.NodeGUID == guid).First();
-                var tmpLNode = _graphView.CreateNode(tmpNode.LocomotionStateName, position);
+                var tmpLNode = _graphView.CreateNode(perNode.LocomotionStateName, position);
                 tmpLNode.GUID = guid;
+                tmpLNode.LocomotionState = perNode.LocomotionState;
                 var nodePorts = _locomotionContainer.NodeLinks.Where(x => x.BaseNodeGUID == guid).ToList();
                 foreach (var x in nodePorts)
                 {
                     tmpLNode.AddOutputPort(x.BasePortName);
                 }
+                //tmpLNode.SetPosition(new Rect(position, _graphView.DefaultNodeSize));
                 _graphView.AddElement(tmpLNode);
             }
             foreach (var perNode in _locomotionContainer.ConditionNodeData)
@@ -185,9 +186,7 @@ namespace LocomotionStateMachine
                 string guid = perNode.NodeGUID;
                 Vector2 position = perNode.Position;
                 if (string.IsNullOrEmpty(guid)) continue;
-
-                var tmpNode = _locomotionContainer.ConditionNodeData.Where(x => x.NodeGUID == guid).First();
-                var tempCNode = _graphView.CreateNode(tmpNode.Condition, position, typeof(ConditionNode));
+                var tempCNode = _graphView.CreateNode(perNode.Condition, position, typeof(ConditionNode));
                 tempCNode.GUID = guid;
                 _graphView.AddElement(tempCNode);
             }
@@ -197,8 +196,7 @@ namespace LocomotionStateMachine
                 Vector2 position = perNode.Position;
                 if (string.IsNullOrEmpty(guid)) continue;
 
-                var tmpNode = _locomotionContainer.TransitionNodeData.Where(x => x.NodeGUID == guid).First();
-                var tempTNode = _graphView.CreateNode(tmpNode.Operator, position);
+                var tempTNode = _graphView.CreateNode(perNode.Operator, position);
                 tempTNode.GUID = guid;
                 var nodePorts = _locomotionContainer.NodeLinks.Where(x => x.TargetNodeGUID == guid).ToList();
                 foreach (var x in nodePorts)
@@ -207,50 +205,27 @@ namespace LocomotionStateMachine
                         tempTNode.AddInputPort(x.TargetPortName);
                 }
                 _graphView.AddElement(tempTNode);
-
-                
             }
         }
 
         private void ConnectLocomotionNodes()
         {
-            for (var i = 0; i < Nodes.Count; i++)
+            for (int i = 0; i < _locomotionContainer.NodeLinks.Count; i++)
             {
-                var k = i; //Prevent access to modified closure
-                var connections = _locomotionContainer.NodeLinks.Where(x => x.BaseNodeGUID == Nodes[k].GUID).ToList();
-                for (var j = 0; j < connections.Count(); j++)
-                {
-                    var targetNodeGUID = connections[j].TargetNodeGUID;
-                    var targetNode = Nodes.First(x => x.GUID == targetNodeGUID);
-                    Port targetPort = null;
-                    for (int t = 0; t < targetNode.inputContainer.childCount; t++)
-                    {
-                        var port = (Port)targetNode.inputContainer[t];
-                        if (port.portName == connections[j].TargetPortName)
-                        {
-                            targetPort = port;
-                            break;
-                        }
-                    }
-                    LinkNodesTogether((Port)Nodes[i].outputContainer[j], targetPort);
+                var connection = _locomotionContainer.NodeLinks[i];
+                var outputNode = Nodes.First(x => x.GUID == connection.BaseNodeGUID);
+                var inputNode = Nodes.First(x => x.GUID == connection.TargetNodeGUID);
+                Port outputPort = outputNode.outputContainer.Children().OfType<Port>().FirstOrDefault(x => x.portName == connection.BasePortName);
+                Port inputPort = inputNode.inputContainer.Children().OfType<Port>().FirstOrDefault(x => x.portName == connection.TargetPortName);
 
-                    Vector2 position = Vector2.zero;
-                    if (_locomotionContainer.LocomotionNodeData.Any(x => x.NodeGUID == targetNodeGUID))
-                        position = _locomotionContainer.LocomotionNodeData.First(x => x.NodeGUID == targetNodeGUID).Position;
-                    else if (_locomotionContainer.ConditionNodeData.Any(x => x.NodeGUID == targetNodeGUID))
-                        position = _locomotionContainer.ConditionNodeData.First(x => x.NodeGUID == targetNodeGUID).Position;
-                    else
-                        position = _locomotionContainer.TransitionNodeData.First(x => x.NodeGUID == targetNodeGUID).Position;
-                    targetNode.SetPosition(new Rect(position, _graphView.DefaultNodeSize));
-                }
+                LinkNodesTogether(outputPort, inputPort);
             }
         }
-
         private void LinkNodesTogether(Port outputSocket, Port inputSocket)
         {
-            if(inputSocket == null)
+            if(outputSocket == null && inputSocket == null)
             {
-                Debug.LogWarning(outputSocket.userData + " is null");
+                Debug.LogError($"Input socket: {inputSocket.userData}\nOutput socket: {outputSocket.userData}");
                 return;
             }
             var tempEdge = new Edge()

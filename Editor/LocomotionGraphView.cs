@@ -154,11 +154,19 @@ namespace LocomotionStateMachine
         }
         public ConditionNode CreateNode(StateCondition condition, Vector2 position, Type type)
         {
+            if (condition.Duration > 0)
+                type = typeof(HoldStillNode);
+            else if (condition.LastDeviceState != HistoryState.Any)
+                type = typeof(HistoryRecordNode);
+            else if (!condition.TriggerMovement.isAllEverything())
+                type = typeof(TriggerNode);
+
             // identify the type of the condition, it may be ConditionNode or TriggerNode
             var tempConditionNode = type == typeof(ConditionNode)
                                     ? new ConditionNode(condition, false): type == typeof(TriggerNode)
-                                    ? new TriggerNode(condition, false): 
-                                    new HistoryRecordNode(condition, false);
+                                    ? new TriggerNode(condition, false): type == typeof(HistoryRecordNode)
+                                    ? new HistoryRecordNode(condition, false):
+                                    new HoldStillNode(condition, false);
 
             //ConditionNode tempConditionNode = new ConditionNode(condition, false);
             tempConditionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
