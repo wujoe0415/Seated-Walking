@@ -67,12 +67,14 @@ namespace LocomotionStateMachine
 
         private void GenerateMiniMap()
         {
-            MiniMap miniMap = new MiniMap { anchored = true };
-            miniMap.SetPosition(new Rect(10, 40, 200, 150));
-            miniMap.style.width = 200;
-            miniMap.style.height = 150;
+            MiniMap miniMap = new MiniMap { anchored = false};
+            miniMap.SetPosition(new Rect(10, 30, 150, 100));
+            miniMap.maxHeight = 100;
+            miniMap.maxWidth = 150;
+            miniMap.elementTypeColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+            miniMap.style.backgroundColor = new Color(0f, 0f, 0f, 0.5f);
+            miniMap.style.color = Color.white;
             _graphView.Add(miniMap); 
-            Debug.Log("Add MiniMap");
         }
         private void GenerateBlackBoard()
         {

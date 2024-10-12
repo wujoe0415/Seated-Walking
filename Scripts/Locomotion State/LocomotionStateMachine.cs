@@ -6,6 +6,7 @@ namespace LocomotionStateMachine
 {
     public class LocomotionStateMachine : MonoBehaviour
     {
+        [SerializeField]
         private DataMovementMapper MovementMapper;
 
         private List<LocomotionState> StateGraph = new List<LocomotionState>();
@@ -13,7 +14,6 @@ namespace LocomotionStateMachine
         [HideInInspector]
         public LocomotionState RootState;
 
-        [HideInInspector]
         public LocomotionState CurrentState;
         [HideInInspector]
         public List<string> StateHistory = new List<string>();
@@ -36,9 +36,14 @@ namespace LocomotionStateMachine
         }
         public LocomotionState GetState(string name)
         {
+            foreach(LocomotionState state in StateGraph)
+            {
+                if (state.State == name)
+                    return state;
+            }
             return StateGraph.Find(x => x.State == name);
         }
-        public void ChangeState(MovementEnumerator lastState, MovementEnumerator currentState)
+        public void ChangeState(MovementEnumerator currentState, bool isMoniter)
         {
             if(CurrentState == null)
             {
@@ -46,11 +51,14 @@ namespace LocomotionStateMachine
                 return;
             }    
             string state = CurrentState.State;
-            LocomotionState nextState = CurrentState.ChangeState(currentState);
-            if (nextState != null) {
+            LocomotionState nextState = CurrentState.ChangeState(currentState, isMoniter);
+            if (nextState != null)
+            {
+                CurrentState.ResetState();
                 CurrentState = nextState;
-                StateHistory.Add(state);
+                //StateHistory.Add(state);
                 _idleTimer = 0f;
+                CurrentState.ResetState();
                 CurrentState.StateMovement(); // TODO: Check whether call when changing state
             }
             else

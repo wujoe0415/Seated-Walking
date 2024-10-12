@@ -99,7 +99,7 @@ namespace LocomotionStateMachine {
         public HistoryRecorder HistoryStates;
         //public DataReader[] SerialDataReader;
 
-        public Action<MovementEnumerator, MovementEnumerator> OnChangeState;
+        public Action<MovementEnumerator, bool> OnChangeState;
 
         private void Awake()
         {
@@ -144,7 +144,7 @@ namespace LocomotionStateMachine {
             // Change state
             if (previousValue != GetDeviceMovement(s))
             {
-                OnChangeState?.Invoke(PreviousShoesStates, CurrentShoesStates);
+                OnChangeState?.Invoke(CurrentShoesStates, false);
                 if (GetDeviceMovement(s) == Movement.Step)
                     HistoryRecorder.UpdateStep(s);
                 PreviousShoesStates = CurrentShoesStates;
@@ -171,6 +171,11 @@ namespace LocomotionStateMachine {
                 CurrentShoesStates.RightToe = movement;
             else
                 CurrentShoesStates.RightHeel = movement;
+        }
+
+        private void Update()
+        {
+            OnChangeState?.Invoke(CurrentShoesStates, true);
         }
     }
 }

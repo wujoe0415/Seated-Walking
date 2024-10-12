@@ -42,7 +42,11 @@ namespace LocomotionStateMachine
             }
             // Construct Graph
             foreach (var locomotionNode in Container.LocomotionNodeData)
-                _stateMachine.AddState(StateMaps.Find(x => x.key == locomotionNode.LocomotionStateName).value as LocomotionState);
+            {
+                LocomotionState s = StateMaps.Find(x => x.key == locomotionNode.LocomotionStateName).value as LocomotionState;
+                s.State = locomotionNode.LocomotionStateName;
+                _stateMachine.AddState(s);
+            }
             // Set up Root State
             foreach (var locomotionNode in Container.NodeLinks)
             {
@@ -61,14 +65,14 @@ namespace LocomotionStateMachine
                 var state = _stateMachine.GetState(locomotionNode.LocomotionStateName);
                 state.State = locomotionNode.LocomotionStateName;
                 state.stateGraph = new List<StateTransition>();
+                
                 foreach (var nodeLink in Container.NodeLinks)
                 {
                     if (nodeLink.BaseNodeGUID != locomotionNode.NodeGUID)
                         continue;
-                    Debug.Log(nodeLink.BaseNodeGUID + " " + nodeLink.TargetNodeGUID);
                     // find transition node
                     var transitionNode = Container.TransitionNodeData.Find(x => x.NodeGUID == nodeLink.TargetNodeGUID);
-                    Debug.Log(Container.NodeLinks.Find(x => x.BaseNodeGUID == transitionNode.NodeGUID));
+                    
                     var transitionNodeuid = Container.NodeLinks.Find(x => x.BaseNodeGUID == transitionNode.NodeGUID).TargetNodeGUID;
                     string targetStateName = Container.LocomotionNodeData.Find(x => x.NodeGUID == transitionNodeuid).LocomotionStateName;
                     LocomotionState destination = _stateMachine.GetState(targetStateName);
@@ -78,7 +82,6 @@ namespace LocomotionStateMachine
                     foreach (var conditionNode in conditionNodes)
                         stateConditions.Add(conditionNode.Condition);
 
-                    Debug.Log(destination);
                     StateTransition transition = new StateTransition(destination, transitionNode.Operator, stateConditions);
                     state.AddTransition(transition);                    
                 }

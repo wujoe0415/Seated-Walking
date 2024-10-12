@@ -25,7 +25,6 @@ namespace LocomotionStateMachine
             floatField.RegisterValueChangedCallback(evt =>
             {
                 base.Condition.Duration = evt.newValue;
-                Debug.Log($"Float value updated to: {base.Condition.Duration}");
             });
 
             // Add the FloatField to the node's main container
