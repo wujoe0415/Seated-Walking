@@ -33,8 +33,6 @@ namespace LocomotionStateMachine
         
         public bool IsSatisfied(MovementEnumerator c/*, float t*/)
         {
-            Debug.Log($"Trigger Movement {isMatch(TriggerMovement, c)}\n HistoryMovemnt {isMatchHistory()}");
-
             return isMatch(TriggerMovement, c) & isMatchHistory();
             //if (HasSatisfied)
             //    return HasSatisfied;
@@ -101,6 +99,11 @@ namespace LocomotionStateMachine
     [System.Serializable]
     public class StateTransition
     {
+        public StateTransition(LocomotionState state, BooleanOperator oper, List<StateCondition> conditions) {
+            NextState = state;
+            Operator = oper;
+            Condition = conditions;
+        }
         [System.Serializable]
         public enum BooleanOperator
         {
@@ -164,13 +167,17 @@ namespace LocomotionStateMachine
             {
                 if (state.CanTransit(currentState/*inputDevice, inputMovement, inputTime*/))
                 {
-                    Debug.Log("Transit " + state.NextState.State);
                     return state.NextState;
                 }
             }
             return null;
         }
-
+        
+        public void AddTransition(StateTransition s)
+        {
+            stateGraph.Add(s);
+        }
+        
         [HideInInspector]
         public GameObject Player;
         public void OnEnable()
@@ -178,7 +185,6 @@ namespace LocomotionStateMachine
             if (Player == null)
                 Player = GameObject.FindObjectOfType<OVRCameraRig>().gameObject;
         }
-        
         public virtual void StateMovement()
         {
             Debug.Log("Basic Locomotion Movement");

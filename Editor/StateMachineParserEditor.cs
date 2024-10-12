@@ -1,6 +1,7 @@
 using LocomotionStateMachine;
 using UnityEditor;
 using UnityEngine;
+using static LocomotionStateMachine.LocomotionParser;
 
 namespace LocomotionStateMachine
 {
@@ -80,17 +81,15 @@ namespace LocomotionStateMachine
             EditorGUILayout.EndHorizontal();
 
             // Display each LocomotionStateName with a MonoBehaviour field
-            foreach (var locomotionNode in parser.Container.LocomotionNodeData)
-            {
+            for(int i = 0; i < parser.StateMaps.Count; i++) { 
                 EditorGUILayout.BeginHorizontal();
 
                 // Show the LocomotionStateName
-                EditorGUILayout.LabelField(locomotionNode.LocomotionStateName, GUILayout.Width(150));
+                EditorGUILayout.LabelField(parser.StateMaps[i].key, GUILayout.Width(150));
 
                 // Add a MonoBehaviour slot for assigning related MonoBehaviour
-                var currentMonoBehaviour = locomotionNode.LocomotionState == null ? null : locomotionNode.LocomotionState as LocomotionState;
-                locomotionNode.LocomotionState = (LocomotionState)EditorGUILayout.ObjectField(
-                    "",
+                MonoBehaviour currentMonoBehaviour = parser.StateMaps[i].value;
+                parser.StateMaps[i].value = (LocomotionState)EditorGUILayout.ObjectField(
                     currentMonoBehaviour,
                     typeof(LocomotionState),
                     true
@@ -102,6 +101,7 @@ namespace LocomotionStateMachine
             // Apply any changes made to the fields
             if (GUI.changed)
             {
+                EditorUtility.SetDirty(parser);
                 EditorUtility.SetDirty(parser.Container);
                 AssetDatabase.SaveAssets();
             }

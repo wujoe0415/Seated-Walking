@@ -54,7 +54,8 @@ namespace LocomotionStateMachine
         public void ClearBlackBoardAndExposedProperties()
         {
             ExposedProperties.Clear();
-            Blackboard.Clear();
+            if(Blackboard != null)
+                Blackboard.Clear();
         }
         public Group CreateBlock(Rect rect, BlockData blockData = null)
         {

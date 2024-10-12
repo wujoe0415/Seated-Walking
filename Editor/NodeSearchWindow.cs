@@ -29,14 +29,15 @@ namespace LocomotionStateMachine
             var tree = new List<SearchTreeEntry>
             {
                 new SearchTreeGroupEntry(new GUIContent("Create Node"), 0),
+                new SearchTreeEntry(new GUIContent("Locomotion State", _indentationIcon)) { level = 1, userData = new LocomotionNode("Locomotion State", "Locomotion State", false)},
+                new SearchTreeEntry(new GUIContent("Transition", _indentationIcon)) { level = 1, userData = new TransitionNode(StateTransition.BooleanOperator.AND, false)},
+
                 new SearchTreeGroupEntry(new GUIContent("Condition"), 1),
-                new SearchTreeEntry(new GUIContent("Add Locomotion State", _indentationIcon)) { level = 1, userData = new LocomotionNode("Locomotion State", "Locomotion State", false)},
-                new SearchTreeEntry(new GUIContent("Add Transition", _indentationIcon)) { level = 1, userData = new TransitionNode(StateTransition.BooleanOperator.AND, false)},
-                new SearchTreeEntry(new GUIContent("Any Condition", _indentationIcon)) { level = 1, userData = new ConditionNode(new StateCondition(), false)},
-                new SearchTreeEntry(new GUIContent("Trigger Condition", _indentationIcon)) { level = 1, userData = new TriggerNode(new StateCondition(), false)},
-                new SearchTreeEntry(new GUIContent("Hold Still Duration Condition", _indentationIcon)) { level = 1, userData = new HoldStillNode(new StateCondition(), false)},
-                new SearchTreeEntry(new GUIContent("Record Track Condition", _indentationIcon)) { level = 1, userData = new HistoryRecordNode(new StateCondition(), false)},
-                new SearchTreeEntry(new GUIContent("Create Block", _indentationIcon)) { level = 1, userData = new Group() }
+                new SearchTreeEntry(new GUIContent("Any", _indentationIcon)) { level = 2, userData = new ConditionNode(new StateCondition(), false)},
+                new SearchTreeEntry(new GUIContent("Trigger", _indentationIcon)) { level = 2, userData = new TriggerNode(new StateCondition(), false)},
+                new SearchTreeEntry(new GUIContent("Hold Still Trigger", _indentationIcon)) { level = 2, userData = new HoldStillNode(new StateCondition(), false)},
+                new SearchTreeEntry(new GUIContent("Last State", _indentationIcon)) { level = 2, userData = new HistoryRecordNode(new StateCondition(), false)},
+                //new SearchTreeEntry(new GUIContent("Create Block", _indentationIcon)) { level = 1, userData = new Group() }
             };
 
             return tree;  

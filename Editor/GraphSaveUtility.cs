@@ -99,7 +99,7 @@ namespace LocomotionStateMachine
                         var tmpLNode = node as LocomotionNode;
                         guid = tmpLNode.GUID;
                         position = tmpLNode.GetPosition().position;
-                        locomotionContainerObject.LocomotionNodeData.Add(new LocomotionNodeData { NodeGUID = guid, Position = position, LocomotionStateName = tmpLNode.StateName, LocomotionState = tmpLNode.LocomotionState as LocomotionState }); 
+                        locomotionContainerObject.LocomotionNodeData.Add(new LocomotionNodeData { NodeGUID = guid, Position = position, LocomotionStateName = tmpLNode.StateName}); 
                         break;
                 }
             }
@@ -172,7 +172,6 @@ namespace LocomotionStateMachine
                 
                 var tmpLNode = _graphView.CreateNode(perNode.LocomotionStateName, position);
                 tmpLNode.GUID = guid;
-                tmpLNode.LocomotionState = perNode.LocomotionState;
                 var nodePorts = _locomotionContainer.NodeLinks.Where(x => x.BaseNodeGUID == guid).ToList();
                 foreach (var x in nodePorts)
                 {

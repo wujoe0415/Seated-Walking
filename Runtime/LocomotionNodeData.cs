@@ -7,6 +7,5 @@ namespace LocomotionStateMachine
     public class LocomotionNodeData: BasicNodeData
     { 
         public string LocomotionStateName;
-        public UnityEngine.Object LocomotionState = new UnityEngine.Object() as LocomotionState;
     }
 }

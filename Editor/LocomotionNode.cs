@@ -10,7 +10,6 @@ namespace LocomotionStateMachine
     public class LocomotionNode: BasicNode
     {
         public string StateName;
-        public UnityEngine.Object LocomotionState; // To store the script references
         public Action<Node, Port> OnDeletePort;
         public LocomotionNode(string title, string name, bool isEntry)
         {
@@ -32,19 +31,6 @@ namespace LocomotionStateMachine
                 base.title = evt.newValue;
             });
             textField.SetValueWithoutNotify(title);
-            var scriptField = new ObjectField()
-            {
-                objectType = typeof(UnityEngine.Object),
-                allowSceneObjects = false,
-            };
-            // Register callback to update scriptReference when a script is dragged in
-            scriptField.RegisterValueChangedCallback(evt =>
-            {
-                LocomotionState = evt.newValue as LocomotionState;
-                Debug.Log($"Script reference updated: {LocomotionState}");
-            });
-
-            extensionContainer.Add(scriptField);
 
             var button = new Button(() => { AddOutputPort(); })
             {

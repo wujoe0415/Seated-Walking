@@ -68,9 +68,11 @@ namespace LocomotionStateMachine
         private void GenerateMiniMap()
         {
             MiniMap miniMap = new MiniMap { anchored = true };
-            var cords = _graphView.contentViewContainer.WorldToLocal(new Vector2(this.maxSize.x - 10, 30));
-            miniMap.SetPosition(new Rect(cords.x, cords.y, 200, 140));
-            _graphView.Add(miniMap);
+            miniMap.SetPosition(new Rect(10, 40, 200, 150));
+            miniMap.style.width = 200;
+            miniMap.style.height = 150;
+            _graphView.Add(miniMap); 
+            Debug.Log("Add MiniMap");
         }
         private void GenerateBlackBoard()
         {
@@ -103,7 +105,7 @@ namespace LocomotionStateMachine
             ConstructGraphView();
             GenerateToolbar();
             GenerateMiniMap();
-            GenerateBlackBoard();
+            //GenerateBlackBoard();
         }
         private void OnDisable()
         {

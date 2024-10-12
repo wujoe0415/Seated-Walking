@@ -3,21 +3,32 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Resources;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace LocomotionStateMachine
 {
+    [RequireComponent(typeof(LocomotionStateMachine))]
     public class LocomotionParser : MonoBehaviour
     {
+        [System.Serializable]
+        public class StateMap
+        {
+            public string key;
+            public MonoBehaviour value;
+        }
+
         public StateMachineContainer Container;
-        [SerializeField] private TextMeshProUGUI locomotionText;
-        [SerializeField] private Button choicePrefab;
-        [SerializeField] private Transform buttonContainer;
+        private LocomotionStateMachine _stateMachine;
+        public List<StateMap> StateMaps = new List<StateMap>();
 
         private void Start()
         {
+            _stateMachine = GetComponent<LocomotionStateMachine>();
+            if (_stateMachine == null)
+                _stateMachine = gameObject.AddComponent<LocomotionStateMachine>();
             //var narrativeData = container.NodeLinks.First(); //Entrypoint node
             //ProceedToNarrative(narrativeData.TargetNodeGUID);
             ParseStateMachineContainer();
@@ -29,74 +40,75 @@ namespace LocomotionStateMachine
                 Debug.LogError("StateMachineContainer reference is missing. Please assign it in the Inspector.");
                 return;
             }
-
-            // Parse NodeLinks
-            foreach (var nodeLink in Container.NodeLinks)
+            // Construct Graph
+            foreach (var locomotionNode in Container.LocomotionNodeData)
+                _stateMachine.AddState(StateMaps.Find(x => x.key == locomotionNode.LocomotionStateName).value as LocomotionState);
+            // Set up Root State
+            foreach (var locomotionNode in Container.NodeLinks)
             {
-                Debug.Log($"NodeLink: From {nodeLink.BaseNodeGUID} to {nodeLink.TargetNodeGUID}");
-                // Add any additional processing logic here
+                if (locomotionNode.BasePortName == "Root")
+                {
+                    string rootName = Container.LocomotionNodeData.Find(x => x.NodeGUID == locomotionNode.TargetNodeGUID).LocomotionStateName;
+                    _stateMachine.RootState = StateMaps.Find(x=>x.key == rootName).value as LocomotionState;
+                    _stateMachine.CurrentState = _stateMachine.RootState;
+                    break;
+                }
             }
 
-            // Parse LocomotionNodeData
+            // Set up Each State
             foreach (var locomotionNode in Container.LocomotionNodeData)
             {
-                Debug.Log($"LocomotionNode: {locomotionNode.LocomotionStateName}");
-                // Process the locomotion node's LocomotionState data, if needed
-            }
+                var state = _stateMachine.GetState(locomotionNode.LocomotionStateName);
+                state.State = locomotionNode.LocomotionStateName;
+                state.stateGraph = new List<StateTransition>();
+                foreach (var nodeLink in Container.NodeLinks)
+                {
+                    if (nodeLink.BaseNodeGUID != locomotionNode.NodeGUID)
+                        continue;
+                    Debug.Log(nodeLink.BaseNodeGUID + " " + nodeLink.TargetNodeGUID);
+                    // find transition node
+                    var transitionNode = Container.TransitionNodeData.Find(x => x.NodeGUID == nodeLink.TargetNodeGUID);
+                    Debug.Log(Container.NodeLinks.Find(x => x.BaseNodeGUID == transitionNode.NodeGUID));
+                    var transitionNodeuid = Container.NodeLinks.Find(x => x.BaseNodeGUID == transitionNode.NodeGUID).TargetNodeGUID;
+                    string targetStateName = Container.LocomotionNodeData.Find(x => x.NodeGUID == transitionNodeuid).LocomotionStateName;
+                    LocomotionState destination = _stateMachine.GetState(targetStateName);
+                    var conditions = Container.NodeLinks.Where(x => x.TargetNodeGUID == transitionNode.NodeGUID);
+                    var conditionNodes = Container.ConditionNodeData.Where(x => conditions.Any(y => y.BaseNodeGUID == x.NodeGUID));
+                    List<StateCondition> stateConditions = new List<StateCondition>();
+                    foreach (var conditionNode in conditionNodes)
+                        stateConditions.Add(conditionNode.Condition);
 
-            // Parse TransitionNodeData
-            foreach (var transitionNode in Container.TransitionNodeData)
-            {
-                Debug.Log($"TransitionNode: GUID={transitionNode.Operator}");
-                // Additional processing as required
-            }
-
-            // Parse ConditionNodeData
-            foreach (var conditionNode in Container.ConditionNodeData)
-            {
-                Debug.Log($"ConditionNode: {conditionNode.Condition}");
-                // Handle the ConditionNodeData information here
-            }
-
-            // Parse ExposedProperties
-            foreach (var property in Container.ExposedProperties)
-            {
-                Debug.Log($"ExposedProperty: {property.PropertyName} = {property.PropertyValue}");
-            }
-
-            // Parse BlockData
-            foreach (var block in Container.BlockData)
-            {
-                Debug.Log($"BlockData: Block Name = {block}");
-                // Process each BlockData here
+                    Debug.Log(destination);
+                    StateTransition transition = new StateTransition(destination, transitionNode.Operator, stateConditions);
+                    state.AddTransition(transition);                    
+                }
             }
         }
-        private void ProceedToNarrative(string narrativeDataGUID)
+        private void OnValidate()
         {
-            var text = Container.LocomotionNodeData.Find(x => x.NodeGUID == narrativeDataGUID).LocomotionStateName;
-            var choices = Container.NodeLinks.Where(x => x.BaseNodeGUID == narrativeDataGUID);
-            locomotionText.text = ProcessProperties(text);
-            var buttons = buttonContainer.GetComponentsInChildren<Button>();
-            for (int i = 0; i < buttons.Length; i++)
+            // Initialize the container if it hasn¡¦t been set
+            if (Container == null)
+                return;
+
+            // Create a HashSet of keys from the List for quick lookup
+            HashSet<string> existingKeys = new HashSet<string>();
+            foreach (var stateMap in StateMaps)
             {
-                Destroy(buttons[i].gameObject);
+                existingKeys.Add(stateMap.key);
             }
 
-            foreach (var choice in choices)
+            // Add missing keys from LocomotionNodeData to the List
+            foreach (var locomotionNode in Container.LocomotionNodeData)
             {
-                var button = Instantiate(choicePrefab, buttonContainer);
-                button.GetComponentInChildren<Text>().text = ProcessProperties(choice.BasePortName);
-                button.onClick.AddListener(() => ProceedToNarrative(choice.TargetNodeGUID));
+                if (!existingKeys.Contains(locomotionNode.LocomotionStateName))
+                {
+                    StateMaps.Add(new StateMap
+                    {
+                        key = locomotionNode.LocomotionStateName,
+                        value = null
+                    });
+                }
             }
-        }
-
-        private string ProcessProperties(string text)
-        {
-            foreach (var exposedProperty in Container.ExposedProperties)
-            {
-                text = text.Replace($"[{exposedProperty.PropertyName}]", exposedProperty.PropertyValue);
-            }
-            return text;
         }
     }
 }
