@@ -14,7 +14,7 @@ namespace LocomotionStateMachine
         public override void StateMovement()
         {
             Debug.Log("Turn Right");
-            Vector3 rotateAngle = Vector3.down * RotateAngle;
+            Vector3 rotateAngle = Vector3.up * RotateAngle;
             Player.transform.DORotate(Player.transform.eulerAngles + rotateAngle, RotateDuration);
         }
     }

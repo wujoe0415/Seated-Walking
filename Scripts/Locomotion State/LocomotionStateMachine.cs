@@ -6,14 +6,12 @@ namespace LocomotionStateMachine
 {
     public class LocomotionStateMachine : MonoBehaviour
     {
-        [SerializeField]
-        private DataMovementMapper MovementMapper;
-
-        private List<LocomotionState> StateGraph = new List<LocomotionState>();
+        private DataMovementMapper _movementMapper;
+        private List<LocomotionState> _stateGraph = new List<LocomotionState>();
 
         [HideInInspector]
         public LocomotionState RootState;
-
+        
         public LocomotionState CurrentState;
         [HideInInspector]
         public List<string> StateHistory = new List<string>();
@@ -22,26 +20,26 @@ namespace LocomotionStateMachine
         private float _idleTimer = 0f;
         private void OnEnable()
         {
-            MovementMapper = FindObjectOfType<DataMovementMapper>();
-            MovementMapper.OnChangeState += ChangeState;
+            _movementMapper = FindObjectOfType<DataMovementMapper>();
+            _movementMapper.OnChangeState += ChangeState;
         }
         private void OnDisable()
         {
-            MovementMapper.OnChangeState -= ChangeState;
+            _movementMapper.OnChangeState -= ChangeState;
             StateHistory.Clear();
         }
         public void AddState(LocomotionState state)
         {
-            StateGraph.Add(state);
+            _stateGraph.Add(state);
         }
         public LocomotionState GetState(string name)
         {
-            foreach(LocomotionState state in StateGraph)
+            foreach(LocomotionState state in _stateGraph)
             {
                 if (state.State == name)
                     return state;
             }
-            return StateGraph.Find(x => x.State == name);
+            return _stateGraph.Find(x => x.State == name);
         }
         public void ChangeState(MovementEnumerator currentState, bool isMoniter)
         {
@@ -66,7 +64,7 @@ namespace LocomotionStateMachine
                 _idleTimer += Time.deltaTime;
                 if (_idleTimer > IdleThreshold)
                 {
-                    CurrentState = StateGraph[0];
+                    CurrentState = _stateGraph[0];
                     _idleTimer = 0f;
                 }
             }

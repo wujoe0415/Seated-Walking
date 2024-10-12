@@ -15,7 +15,7 @@ namespace LocomotionStateMachine
         {
             Debug.Log("Turn Left");
             Vector3 rotateAngle = Vector3.up * RotateAngle;
-            Player.transform.DORotate(Player.transform.eulerAngles + rotateAngle, RotateDuration);
+            Player.transform.DORotate(Player.transform.eulerAngles - rotateAngle, RotateDuration);
         }
     }
 }

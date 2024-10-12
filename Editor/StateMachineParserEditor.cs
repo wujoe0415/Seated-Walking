@@ -55,7 +55,6 @@ namespace LocomotionStateMachine
             {
                 serializedObject.ApplyModifiedProperties();
                 isContainerChanged = true;
-                Debug.Log("Container Change");
             }
 
             // If container changed, update LocomotionStateName list
