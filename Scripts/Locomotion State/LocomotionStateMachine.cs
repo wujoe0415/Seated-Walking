@@ -16,8 +16,8 @@ namespace LocomotionStateMachine
         [HideInInspector]
         public List<string> StateHistory = new List<string>();
 
-        public float IdleThreshold = 1f;
-        private float _idleTimer = 0f;
+        //public float IdleThreshold = 1f;
+        //private float _idleTimer = 0f;
         private void OnEnable()
         {
             _movementMapper = FindObjectOfType<DataMovementMapper>();
@@ -55,19 +55,19 @@ namespace LocomotionStateMachine
                 CurrentState.ResetState();
                 CurrentState = nextState;
                 //StateHistory.Add(state);
-                _idleTimer = 0f;
+                //_idleTimer = 0f;
                 CurrentState.ResetState();
                 CurrentState.StateMovement(); // TODO: Check whether call when changing state
             }
-            else
-            {
-                _idleTimer += Time.deltaTime;
-                if (_idleTimer > IdleThreshold)
-                {
-                    CurrentState = _stateGraph[0];
-                    _idleTimer = 0f;
-                }
-            }
+            //else
+            //{
+            //    _idleTimer += Time.deltaTime;
+            //    if (_idleTimer > IdleThreshold)
+            //    {
+            //        CurrentState = _stateGraph[0];
+            //        _idleTimer = 0f;
+            //    }
+            //}
         }
     }
 }

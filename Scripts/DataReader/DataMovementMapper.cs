@@ -57,32 +57,64 @@ namespace LocomotionStateMachine {
     }
     public class HistoryRecorder
     {
-        public static DeviceType s_LastToeStep;
-        public static DeviceType s_LastHeelStep;
-        public static DeviceType s_LastLeftShoeStep;
-        public static DeviceType s_LastRightShoeStep;
+        public static DeviceType s_LastStepDevice;
+        public static DeviceType s_LastSteppedToe;
+        public static DeviceType s_LastSteppedHeel;
+        public static DeviceType s_LastSteppedLeftShoe;
+        public static DeviceType s_LastSteppedRightShoe;
+
+        public static DeviceType s_LastRaisedDevice;
+        public static DeviceType s_LastRaisedToe;
+        public static DeviceType s_LastRaisedHeel;
+        public static DeviceType s_LastRaisedLeftShoe;
+        public static DeviceType s_LastRaisedRightShoe;
 
         public static void UpdateStep(DeviceType d)
         {
+            s_LastStepDevice = d;
             if (d == DeviceType.LeftToe)
             {
-                s_LastToeStep = d;
-                s_LastLeftShoeStep = d;
+                s_LastSteppedToe = d;
+                s_LastSteppedLeftShoe = d;
             }
             else if (d == DeviceType.LeftHeel)
             {
-                s_LastHeelStep = d;
-                s_LastLeftShoeStep = d;
+                s_LastSteppedHeel = d;
+                s_LastSteppedLeftShoe = d;
             }
             else if (d == DeviceType.RightToe)
             {
-                s_LastToeStep = d;
-                s_LastRightShoeStep = d;
+                s_LastSteppedToe = d;
+                s_LastSteppedRightShoe = d;
             }
             else
             {
-                s_LastHeelStep = d;
-                s_LastRightShoeStep = d;
+                s_LastSteppedHeel = d;
+                s_LastSteppedRightShoe = d;
+            }
+        }
+        public static void UpdateRaise(DeviceType d)
+        {
+            s_LastRaisedDevice = d;
+            if (d == DeviceType.LeftToe)
+            {
+                s_LastRaisedToe = d;
+                s_LastRaisedLeftShoe = d;
+            }
+            else if (d == DeviceType.LeftHeel)
+            {
+                s_LastRaisedHeel = d;
+                s_LastRaisedLeftShoe = d;
+            }
+            else if (d == DeviceType.RightToe)
+            {
+                s_LastRaisedToe = d;
+                s_LastRaisedRightShoe = d;
+            }
+            else
+            {
+                s_LastRaisedHeel = d;
+                s_LastRaisedRightShoe = d;
             }
         }
     }
@@ -92,11 +124,11 @@ namespace LocomotionStateMachine {
     {
         //[HideInInspector]
         public ShoeState[] ShoeStates = new ShoeState[4];
+        [HideInInspector]
         public MovementEnumerator PreviousShoesStates;
         public MovementEnumerator CurrentShoesStates;
         public int RaiseThreshold = 500;
         public float StepThreshold = 5f;
-        public HistoryRecorder HistoryStates;
         //public DataReader[] SerialDataReader;
 
         public Action<MovementEnumerator, bool> OnChangeState;
@@ -112,10 +144,12 @@ namespace LocomotionStateMachine {
         public void OnEnable()
         {
             SerialDataReader.OnValueChange += UpdateValue;
+            KeyboardDataReader.OnValueChange += UpdateValue;
         }
         public void OnDisable()
         {
             SerialDataReader.OnValueChange -= UpdateValue;
+            KeyboardDataReader.OnValueChange -= UpdateValue;
         }
         public void UpdateValue(DeviceType s, int value)
         {
@@ -133,7 +167,7 @@ namespace LocomotionStateMachine {
                 else
                     SetDeviceMovement(s, Movement.Raise);
             }
-            else if (value < RaiseThreshold)
+            else
             {
                 if (ShoeStates[(int)s].Time > StepThreshold)
                     SetDeviceMovement(s, Movement.Ground);
@@ -147,8 +181,12 @@ namespace LocomotionStateMachine {
                 OnChangeState?.Invoke(CurrentShoesStates, false);
                 if (GetDeviceMovement(s) == Movement.Step)
                     HistoryRecorder.UpdateStep(s);
+                else if (GetDeviceMovement(s) == Movement.Raise)
+                    HistoryRecorder.UpdateRaise(s);
                 PreviousShoesStates = CurrentShoesStates;
             }
+            else
+                OnChangeState?.Invoke(CurrentShoesStates, true);
         }
         public Movement GetDeviceMovement(DeviceType device)
         {
@@ -171,11 +209,6 @@ namespace LocomotionStateMachine {
                 CurrentShoesStates.RightToe = movement;
             else
                 CurrentShoesStates.RightHeel = movement;
-        }
-
-        private void Update()
-        {
-            OnChangeState?.Invoke(CurrentShoesStates, true);
         }
     }
 }

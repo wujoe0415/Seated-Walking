@@ -3,60 +3,59 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Threading;
+using TMPro;
 using UnityEngine;
 
 namespace LocomotionStateMachine
 {
-    public class SerialDataReader : DataReader
+    public class SerialDataReader : MonoBehaviour, IReader
     {
         [Header("Please check before you running the program.")]
         public string COMPort;
+        public bool Stop = false;
         private SerialPort _mainSerialPort;
         private int _bandrate = 115200;
         private float _initClock = 0.0f;
         Thread myThread;
-        
+
         // filter
+        public static readonly Queue<Action> _executionQueue = new Queue<Action>();
 
         public static Action<DeviceType, int> OnValueChange;
-
+        private void Enqueue(Action action)
+        {
+            lock (_executionQueue)
+            {
+                _executionQueue.Enqueue(action);
+            }
+        }
+        
         private void OnEnable()
         {
             Invoke("Init", _initClock);
-            StartCoroutine(KeyboardSimulator());
-        }
-            
-        private IEnumerator KeyboardSimulator()
+        }            
+        private void Update()
         {
-            while(true)
+            if (Stop)
+                return;
+            lock (_executionQueue)
             {
-                if (Input.GetKey(KeyCode.Q))
-                    OnValueChange?.Invoke(DeviceType.LeftToe, 60);
-                else
-                    OnValueChange?.Invoke(DeviceType.LeftToe, 800);
-                if (Input.GetKey(KeyCode.A))
-                    OnValueChange?.Invoke(DeviceType.LeftHeel, 60);
-                else
-                    OnValueChange?.Invoke(DeviceType.LeftHeel, 800);
-                if (Input.GetKey(KeyCode.W))
-                    OnValueChange?.Invoke(DeviceType.RightToe, 60);
-                else
-                    OnValueChange?.Invoke(DeviceType.RightToe, 800);
-                if (Input.GetKey(KeyCode.S))
-                    OnValueChange?.Invoke(DeviceType.RightHeel, 60);
-                else
-                    OnValueChange?.Invoke(DeviceType.RightHeel, 800);
-                yield return null;
+                while (_executionQueue.Count > 0)
+                {
+                    _executionQueue.Dequeue()?.Invoke();
+                }
             }
         }
-        public override void Init()
+        public void Init()
         {
             myThread = new Thread(new ThreadStart(Read));
             myThread.Start();
         }
-        public override void Read()
+        public void Read()
         {
-            try{
+            
+            try
+            {
                 _mainSerialPort = new SerialPort(COMPort, _bandrate);
                 _mainSerialPort.Open();
             }
@@ -68,19 +67,25 @@ namespace LocomotionStateMachine
             {
                 try
                 {
+                    if (Stop)
+                        return;
                     string[] getCommandLine = _mainSerialPort.ReadLine().Split(',');
                     char foot = char.Parse(getCommandLine[0]);
-                    int ball = int.Parse(getCommandLine[1]);
+                    int toe = int.Parse(getCommandLine[1]);
                     int heel = int.Parse(getCommandLine[2]);
                     if (foot == 'R')
                     {
-                        OnValueChange?.Invoke(DeviceType.RightToe, ball);
-                        OnValueChange?.Invoke(DeviceType.RightToe, heel);
+                        _executionQueue.Enqueue(() => OnValueChange?.Invoke(DeviceType.RightToe, toe));
+                        _executionQueue.Enqueue(() => OnValueChange?.Invoke(DeviceType.RightHeel, heel));
+                        //OnValueChange?.Invoke(DeviceType.RightToe, ball);
+                        //OnValueChange?.Invoke(DeviceType.RightToe, heel);
                     }
                     else
                     {
-                        OnValueChange?.Invoke(DeviceType.LeftToe, ball);
-                        OnValueChange?.Invoke(DeviceType.LeftToe, heel);
+                        _executionQueue.Enqueue(() => OnValueChange?.Invoke(DeviceType.LeftToe, toe));
+                        _executionQueue.Enqueue(() => OnValueChange?.Invoke(DeviceType.LeftHeel, heel));
+                        //OnValueChange?.Invoke(DeviceType.LeftToe, ball);
+                        //OnValueChange?.Invoke(DeviceType.LeftToe, heel);
                     }
                 }
                 catch (InvalidCastException e)
@@ -89,8 +94,9 @@ namespace LocomotionStateMachine
                 }
             }
         }
-        public override void Quit()
+        public void Quit()
         {
+            _executionQueue.Clear();
             if (_mainSerialPort.IsOpen)
                 _mainSerialPort.Close();
             if (myThread.IsAlive)
@@ -104,5 +110,6 @@ namespace LocomotionStateMachine
         {
             Quit();
         }
+
     }
 }

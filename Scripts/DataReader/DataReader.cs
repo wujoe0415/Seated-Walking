@@ -9,19 +9,3 @@ public interface IReader
     void Read();
 }
 
-public abstract class DataReader : MonoBehaviour, IReader
-{
-    public virtual void Init()
-    {
-
-    }
-    public virtual void Quit()
-    {
-
-    }
-    public virtual void Read()
-    {
-
-    }
-}
-
