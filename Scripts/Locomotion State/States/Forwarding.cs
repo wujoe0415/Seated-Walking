@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
 
 namespace LocomotionStateMachine
 {
@@ -12,7 +11,7 @@ namespace LocomotionStateMachine
         public override void StateMovement()
         {
             Debug.Log("Forwarding");
-            Player.transform.DOMove(Player.transform.position + Player.transform.forward * Distance, MoveDuration);
+            Player.transform.position = Player.transform.position + Player.transform.forward * Distance;
         }
     }
 }

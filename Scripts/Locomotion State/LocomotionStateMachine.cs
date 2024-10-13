@@ -7,6 +7,7 @@ namespace LocomotionStateMachine
     public class LocomotionStateMachine : MonoBehaviour
     {
         private DataMovementMapper _movementMapper;
+        private StateVisualizer _visualizer;
         private List<LocomotionState> _stateGraph = new List<LocomotionState>();
 
         [HideInInspector]
@@ -21,6 +22,7 @@ namespace LocomotionStateMachine
         private void OnEnable()
         {
             _movementMapper = FindObjectOfType<DataMovementMapper>();
+            _visualizer = FindObjectOfType<StateVisualizer>();
             _movementMapper.OnChangeState += ChangeState;
         }
         private void OnDisable()
@@ -53,11 +55,12 @@ namespace LocomotionStateMachine
             if (nextState != null)
             {
                 CurrentState.ResetState();
+                _visualizer?.HideIcon();
                 CurrentState = nextState;
-                //StateHistory.Add(state);
                 //_idleTimer = 0f;
                 CurrentState.ResetState();
-                CurrentState.StateMovement(); // TODO: Check whether call when changing state
+                CurrentState.StateMovement();
+                _visualizer?.ShowIcon(CurrentState.State);
             }
             //else
             //{

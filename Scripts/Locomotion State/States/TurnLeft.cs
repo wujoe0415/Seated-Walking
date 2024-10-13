@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
 
 namespace LocomotionStateMachine
 {
@@ -13,9 +12,8 @@ namespace LocomotionStateMachine
 
         public override void StateMovement()
         {
-            Debug.Log("Turn Left");
             Vector3 rotateAngle = Vector3.up * RotateAngle;
-            Player.transform.DORotate(Player.transform.eulerAngles - rotateAngle, RotateDuration);
+            Player.transform.RotateAround(Player.transform.position, Vector3.down, RotateAngle);
         }
     }
 }

@@ -133,7 +133,7 @@ namespace LocomotionStateMachine
             _locomotionContainer = Resources.Load<StateMachineContainer>(fileName);
             if (_locomotionContainer == null)
             {
-                EditorUtility.DisplayDialog("File Not Found", "Target Narrative Data does not exist!", "OK");
+                EditorUtility.DisplayDialog("File Not Found", "Target File does not exist!", "OK");
                 return;
             }
 
