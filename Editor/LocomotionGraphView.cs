@@ -1,3 +1,4 @@
+using Codice.Client.Commands.CheckIn;
 using Codice.CM.SEIDInfo;
 using JetBrains.Annotations;
 using System;
@@ -41,8 +42,11 @@ namespace LocomotionStateMachine
             grid.StretchToParentSize();
 
             AddElement(GetEntryPointNodeInstance());
-
             AddSearchWindow(editorWindow);
+
+            canPasteSerializedData += evt => true;
+            serializeGraphElements += OnCopy;
+            unserializeAndPaste += OnPaste;
         }
         private void AddSearchWindow(LocomotionGraph editorWindow)
         {
@@ -136,7 +140,6 @@ namespace LocomotionStateMachine
         public LocomotionNode CreateNode(string nodeTitle, string nodeName, Vector2 position, bool inputOnly = false)
         {
             LocomotionNode tempLocomotionNode = new LocomotionNode(nodeTitle, nodeName, false, inputOnly);
-            tempLocomotionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
             tempLocomotionNode.RefreshExpandedState();
             tempLocomotionNode.RefreshPorts();
             tempLocomotionNode.SetPosition(new Rect(position, DefaultNodeSize));
@@ -160,10 +163,6 @@ namespace LocomotionStateMachine
             }
             return tempLocomotionNode;
         }
-        //public JumpNode CreateNode(string nodeName, Vector2 position)
-        //{
-
-        //}
         public ConditionNode CreateNode(StateCondition condition, Vector2 position, Type type)
         {
             if (condition.Duration > 0)
@@ -181,7 +180,7 @@ namespace LocomotionStateMachine
                                     new HoldStillNode(condition, false);
 
             //ConditionNode tempConditionNode = new ConditionNode(condition, false);
-            tempConditionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
+            //tempConditionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
             tempConditionNode.RefreshExpandedState();
             tempConditionNode.RefreshPorts();
             tempConditionNode.SetPosition(new Rect(position, DefaultNodeSize));
@@ -190,7 +189,7 @@ namespace LocomotionStateMachine
         public TransitionNode CreateNode(StateTransition.BooleanOperator transitionOperator, Vector2 position)
         {
             TransitionNode tempTransitionNode = new TransitionNode(transitionOperator, false);
-            tempTransitionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
+            //tempTransitionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
             tempTransitionNode.SetPosition(new Rect(position, DefaultBlockSize));
             tempTransitionNode.OnDeletePort += (node, port) =>
             {
@@ -228,6 +227,21 @@ namespace LocomotionStateMachine
             
             node.SetPosition(new Rect(x: 100, y: 200, width: 100, height:150));
             return node;
+        }
+        public string CopyCache = "";
+        
+        // TODO: Copy and Paste operations
+        public string OnCopy(IEnumerable<GraphElement> elements)
+        {
+            CopyCache = "";
+            // store data in CopyCache
+            return CopyCache;
+        }
+        public void OnPaste(string operationName, string data)
+        {
+            if (operationName != "Paste")
+                return;
+            Debug.Log(operationName + " " +  data);
         }
     }
 }

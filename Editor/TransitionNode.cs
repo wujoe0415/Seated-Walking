@@ -47,6 +47,7 @@ namespace LocomotionStateMachine
 
             RefreshExpandedState();
             RefreshPorts();
+            styleSheets.Add(Resources.Load<StyleSheet>("TransitionNode"));
         }
         public void AddInputPort(string overrideName = "")
         {

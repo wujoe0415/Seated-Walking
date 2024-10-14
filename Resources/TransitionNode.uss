@@ -1,0 +1,7 @@
+TransitionNode #title {
+    background-color: rgba(37, 150, 190, 0.91);
+}
+
+TransitionNode .mainContainer {
+    background-color: rgba(34, 34, 34, 1); /* Customize this color */
+}

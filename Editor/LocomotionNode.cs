@@ -44,6 +44,7 @@ namespace LocomotionStateMachine
                 titleButtonContainer.Add(button);
             }
             mainContainer.Add(textField);
+            styleSheets.Add(Resources.Load<StyleSheet>("Node"));
             RefreshExpandedState();
             RefreshPorts();
         }

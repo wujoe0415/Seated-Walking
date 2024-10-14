@@ -11,6 +11,7 @@ namespace LocomotionStateMachine
     {
         public HoldStillNode(StateCondition condition, bool isEntry) : base(condition, isEntry)
         {
+            styleSheets.Add(Resources.Load<StyleSheet>("ConditionNode"));
             base.title = "Hold Still";
             mainContainer.Add(new Label("Hold Still Movement"));
             mainContainer.Add(CreateMovementEnumeratorUI());
@@ -19,7 +20,7 @@ namespace LocomotionStateMachine
             FloatField floatField = new FloatField("Hold Still Duration");
             
             if (condition.Duration == 0f)
-                condition.Duration = 0.5f;
+                condition.Duration = 1.5f;
             floatField.value = condition.Duration; // Initialize the field with the current value of floatValue
             // Handle the change event to update the floatValue variable
             floatField.RegisterValueChangedCallback(evt =>
@@ -45,6 +46,7 @@ namespace LocomotionStateMachine
             container.Add(CreateMovementField("Right Toe", Condition.TriggerMovement.RightToe, newValue => Condition.TriggerMovement.RightToe = newValue));
             container.Add(CreateMovementField("Right Heel", Condition.TriggerMovement.RightHeel, newValue => Condition.TriggerMovement.RightHeel = newValue));
 
+            styleSheets.Add(Resources.Load<StyleSheet>("ConditionNode"));
             return container;
         }
         private VisualElement CreateMovementField(string label, Movement currentValue, System.Action<Movement> onValueChanged)

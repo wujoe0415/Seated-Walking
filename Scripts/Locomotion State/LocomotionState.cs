@@ -27,10 +27,9 @@ namespace LocomotionStateMachine
         public List<StateTransition> stateGraph = new List<StateTransition>();
         public LocomotionState ChangeState(MovementEnumerator currentState, bool isMoniter = false)
         {
-            //Debug.Log((DeviceType)inputDevice + " " + (Movement)inputMovement + " " + inputTime);
             foreach (StateTransition state in stateGraph)
             {
-                if (state.CanTransit(currentState, isMoniter/*inputDevice, inputMovement, inputTime*/))
+                if (state.CanTransit(currentState, isMoniter))
                 {
                     return state.NextState;
                 }

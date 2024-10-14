@@ -18,6 +18,7 @@ namespace LocomotionStateMachine {
 
             RefreshPorts();
             RefreshExpandedState();
+            styleSheets.Add(Resources.Load<StyleSheet>("ConditionNode"));
         }
         private VisualElement CreateMovementEnumeratorUI()
         {

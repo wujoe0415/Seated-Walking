@@ -31,7 +31,7 @@ namespace LocomotionStateMachine
                 new SearchTreeGroupEntry(new GUIContent("Create Node"), 0),
                 new SearchTreeGroupEntry(new GUIContent("State"), 1),
                 new SearchTreeEntry(new GUIContent("New Locomotion State", _indentationIcon)) { level = 2, userData = new LocomotionNode("Locomotion State", "Locomotion State", false, false)},
-                new SearchTreeEntry(new GUIContent("Jump to State", _indentationIcon)) { level = 2, userData = new JumpNode("Locomotion State", "Locomotion State", false)},
+                new SearchTreeEntry(new GUIContent("Jump to State", _indentationIcon)) { level = 2, userData = new JumpNode("Jump to Locomotion State", "Locomotion State", false)},
                 new SearchTreeEntry(new GUIContent("Transition", _indentationIcon)) { level = 1, userData = new TransitionNode(StateTransition.BooleanOperator.AND, false)},
 
                 new SearchTreeGroupEntry(new GUIContent("Condition"), 1),
@@ -52,11 +52,11 @@ namespace LocomotionStateMachine
             var graphMousePosition = _graphView.contentViewContainer.WorldToLocal(mousePosition);
             switch (searchTreeEntry.userData)
             {
-                case LocomotionNode node:
-                    _graphView.CreateNewLocomotionNode("Locomotion Node", graphMousePosition);
-                    return true;
                 case JumpNode node:
                     _graphView.CreateNewJumpNode("Jump to State Node", "State Node", graphMousePosition);
+                    return true;
+                case LocomotionNode node:
+                    _graphView.CreateNewLocomotionNode("Locomotion Node", graphMousePosition);
                     return true;
                 case HistoryRecordNode condition:
                     _graphView.CreateNewConditionNode("History Record Node", new StateCondition(), graphMousePosition, typeof(HistoryRecordNode));

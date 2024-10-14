@@ -13,7 +13,7 @@ namespace LocomotionStateMachine
 {
     public class LocomotionGraph : EditorWindow
     {
-        private string _fileName = "New StateMachine";
+        private string _fileName = "DefaultSeatedWalking";
         private LocomotionGraphView _graphView;
 
         [MenuItem("Graph/LocomotionStateMachine")]
