@@ -8,12 +8,12 @@ namespace LocomotionStateMachine
     public class Backwarding : LocomotionState
     {
         public float MoveDuration = 0.001f;
-        public float Distance = 0.1f;
+        public float Distance = 3f;
         public override void StateAction()
         {
             base.StateAction();
             Debug.Log("Backwarding");
-            Player.transform.position = Player.transform.position - Player.transform.forward * Distance;
+            Player.transform.position -= Camera.main.transform.forward * Distance;
         }
     }
 }

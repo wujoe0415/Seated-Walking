@@ -9,7 +9,7 @@ namespace LocomotionStateMachine
         public float Distance = 3f;
         public override void StateAction()
         {
-            Player.transform.position -= transform.right * Distance;
+            Player.transform.position -= Camera.main.transform.right * Distance;
         }
     }
 }
