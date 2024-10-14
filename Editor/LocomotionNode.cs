@@ -11,7 +11,7 @@ namespace LocomotionStateMachine
     {
         public string StateName;
         public Action<Node, Port> OnDeletePort;
-        public LocomotionNode(string title, string name, bool isEntry)
+        public LocomotionNode(string title, string name, bool isEntry, bool inputOnly)
         {
             base.title = title;
             base.GUID = Guid.NewGuid().ToString();
@@ -28,15 +28,21 @@ namespace LocomotionStateMachine
             textField.RegisterValueChangedCallback(evt =>
             {
                 StateName = evt.newValue;
-                base.title = evt.newValue;
+                if (!inputOnly)
+                    base.title = evt.newValue;
+                else
+                    base.title = $"Jump to {evt.newValue}";
             });
-            textField.SetValueWithoutNotify(title);
+            textField.SetValueWithoutNotify(name);
 
-            var button = new Button(() => { AddOutputPort(); })
+            if (!inputOnly)
             {
-                text = "Add New Connection"
-            };
-            titleButtonContainer.Add(button);
+                var button = new Button(() => { AddOutputPort(); })
+                {
+                    text = "Add New Connection"
+                };
+                titleButtonContainer.Add(button);
+            }
             mainContainer.Add(textField);
             RefreshExpandedState();
             RefreshPorts();

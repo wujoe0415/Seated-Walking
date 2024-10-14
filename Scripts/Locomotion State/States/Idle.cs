@@ -5,8 +5,9 @@ namespace LocomotionStateMachine
 {
     public class Idle : LocomotionState
     {
-        public override void StateMovement()
+        public override void StateAction()
         {
+            base.StateAction();
             //Debug.Log("Idle");
         }
     }

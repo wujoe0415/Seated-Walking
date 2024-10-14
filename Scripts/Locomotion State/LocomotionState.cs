@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace LocomotionStateMachine
 {
     public interface IMovement {
-        public void StateMovement();
+        public void StateAction();
     }
     public class LocomotionState : MonoBehaviour, IMovement
     {
@@ -51,14 +50,17 @@ namespace LocomotionStateMachine
         }
         [HideInInspector]
         public GameObject Player;
+        [Tooltip("Once entering the state, call this event.")]
+        public UnityEvent OnStateAction;
+
         public void OnEnable()
         {
             if (Player == null)
                 Player = GameObject.FindObjectOfType<OVRCameraRig>().gameObject;
         }
-        public virtual void StateMovement()
+        public virtual void StateAction()
         {
-            Debug.Log("Basic Locomotion Movement");
+            OnStateAction.Invoke();
         }
     }
 }

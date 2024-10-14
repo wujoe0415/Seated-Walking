@@ -8,6 +8,7 @@ namespace LocomotionStateMachine
         {
             Condition,
             Locomotion,
+            Jump,
             Transition
         }
         public string GUID;

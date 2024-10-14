@@ -164,13 +164,15 @@ namespace LocomotionStateMachine
         /// </summary>
         private void GenerateNodes()
         {
+            // TODO: handle jump case
             foreach (var perNode in _locomotionContainer.LocomotionNodeData)
             {
                 string guid = perNode.NodeGUID;
                 Vector2 position = perNode.Position;
                 if (string.IsNullOrEmpty(guid)) continue;
-                
-                var tmpLNode = _graphView.CreateNode(perNode.LocomotionStateName, position);
+                bool inputOnly = !(_locomotionContainer.NodeLinks.Any(x => x.BaseNodeGUID == guid));
+                string title = inputOnly? $"Jump to {perNode.LocomotionStateName}" : perNode.LocomotionStateName;
+                LocomotionNode tmpLNode = _graphView.CreateNode(title, perNode.LocomotionStateName, position, inputOnly);
                 tmpLNode.GUID = guid;
                 var nodePorts = _locomotionContainer.NodeLinks.Where(x => x.BaseNodeGUID == guid).ToList();
                 foreach (var x in nodePorts)

@@ -32,6 +32,11 @@ namespace LocomotionStateMachine
         }
         public void AddState(LocomotionState state)
         {
+            if (_stateGraph.Contains(state))
+            {
+                Debug.Log($"Has added {state}");
+                return;
+            }
             _stateGraph.Add(state);
         }
         public LocomotionState GetState(string name)
@@ -42,6 +47,10 @@ namespace LocomotionStateMachine
                     return state;
             }
             return _stateGraph.Find(x => x.State == name);
+        }
+        public List<LocomotionState> GetGraph()
+        {
+            return _stateGraph;
         }
         public void ChangeState(MovementEnumerator currentState, bool isMoniter)
         {
@@ -59,7 +68,7 @@ namespace LocomotionStateMachine
                 CurrentState = nextState;
                 //_idleTimer = 0f;
                 CurrentState.ResetState();
-                CurrentState.StateMovement();
+                CurrentState.StateAction();
                 _visualizer?.ShowIcon(CurrentState.State);
             }
             //else

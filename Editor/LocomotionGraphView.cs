@@ -119,7 +119,11 @@ namespace LocomotionStateMachine
         }
         public void CreateNewLocomotionNode(string nodeName, Vector2 position)
         {
-            AddElement(CreateNode(nodeName, position));
+            AddElement(CreateNode(nodeName, nodeName, position));
+        }
+        public void CreateNewJumpNode(string nodeTitle, string nodeName, Vector2 position)
+        {
+            AddElement(CreateNode(nodeTitle, nodeName, position, true));
         }
         public void CreateNewConditionNode(string nodeName, StateCondition condition, Vector2 position, Type type)
         {
@@ -129,30 +133,37 @@ namespace LocomotionStateMachine
         {
             AddElement(CreateNode(transitionOperator, position));
         }
-        public LocomotionNode CreateNode(string nodeName, Vector2 position)
+        public LocomotionNode CreateNode(string nodeTitle, string nodeName, Vector2 position, bool inputOnly = false)
         {
-            LocomotionNode tempLocomotionNode = new LocomotionNode(nodeName, nodeName, false);
+            LocomotionNode tempLocomotionNode = new LocomotionNode(nodeTitle, nodeName, false, inputOnly);
             tempLocomotionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
             tempLocomotionNode.RefreshExpandedState();
             tempLocomotionNode.RefreshPorts();
             tempLocomotionNode.SetPosition(new Rect(position, DefaultNodeSize));
-            tempLocomotionNode.OnDeletePort += (node, port) =>
+            if (!inputOnly)
             {
-                var targetEdge = edges.ToList()
-                    .Where(x => x.output.portName == port.portName && x.output.node == port.node);
-                if (targetEdge.Any())
+                tempLocomotionNode.OnDeletePort += (node, port) =>
                 {
-                    var edge = targetEdge.First();
-                    edge.output.Disconnect(edge);
-                    RemoveElement(targetEdge.First());
-                }
+                    var targetEdge = edges.ToList()
+                        .Where(x => x.output.portName == port.portName && x.output.node == port.node);
+                    if (targetEdge.Any())
+                    {
+                        var edge = targetEdge.First();
+                        edge.output.Disconnect(edge);
+                        RemoveElement(targetEdge.First());
+                    }
 
-                node.outputContainer.Remove(port);
-                node.RefreshPorts();
-                node.RefreshExpandedState();
-            };
+                    node.outputContainer.Remove(port);
+                    node.RefreshPorts();
+                    node.RefreshExpandedState();
+                };
+            }
             return tempLocomotionNode;
         }
+        //public JumpNode CreateNode(string nodeName, Vector2 position)
+        //{
+
+        //}
         public ConditionNode CreateNode(StateCondition condition, Vector2 position, Type type)
         {
             if (condition.Duration > 0)
@@ -203,7 +214,7 @@ namespace LocomotionStateMachine
         }
         private LocomotionNode GetEntryPointNodeInstance()
         {
-            LocomotionNode node = new LocomotionNode("ENTRY", "ENTRYPOINT", true);
+            LocomotionNode node = new LocomotionNode("ENTRY", "ENTRYPOINT", true, false);
 
             var generatedPort = GetPortInstance(node, Direction.Output);
             generatedPort.portName = "Root";

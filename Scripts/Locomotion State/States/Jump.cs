@@ -10,8 +10,9 @@ namespace LocomotionStateMachine
         [Range(1f, 100f)]
         public float Force = 10f;
 
-        public override void StateMovement()
+        public override void StateAction()
         {
+            base.StateAction();
             Debug.Log("Jump");
             _rigidbody.AddForce(Vector3.up * Force);
         }

@@ -64,12 +64,12 @@ namespace LocomotionStateMachine
             {
                 var state = _stateMachine.GetState(locomotionNode.LocomotionStateName);
                 state.State = locomotionNode.LocomotionStateName;
+                var outputLinks = Container.NodeLinks.Where(x => x.BaseNodeGUID == locomotionNode.NodeGUID);
+                if (outputLinks.Count() == 0)
+                    continue;
                 state.stateGraph = new List<StateTransition>();
-                
-                foreach (var nodeLink in Container.NodeLinks)
+                foreach (var nodeLink in outputLinks)
                 {
-                    if (nodeLink.BaseNodeGUID != locomotionNode.NodeGUID)
-                        continue;
                     // find transition node
                     var transitionNode = Container.TransitionNodeData.Find(x => x.NodeGUID == nodeLink.TargetNodeGUID);
                     
