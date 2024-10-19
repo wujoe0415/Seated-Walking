@@ -29,7 +29,6 @@ namespace LocomotionStateMachine
             };
         }
 
-        // TODO: Test Graph
         public void SaveGraph(string fileName)
         {
             var locomotionContainerObject = ScriptableObject.CreateInstance<StateMachineContainer>();
@@ -54,7 +53,7 @@ namespace LocomotionStateMachine
                 container.ConditionNodeData = locomotionContainerObject.ConditionNodeData;
                 container.TransitionNodeData = locomotionContainerObject.TransitionNodeData;
                 container.ExposedProperties = locomotionContainerObject.ExposedProperties;
-                container.BlockData = locomotionContainerObject.BlockData;
+                container.GroupDatas = locomotionContainerObject.GroupDatas;
                 EditorUtility.SetDirty(container);
             }
 
@@ -116,10 +115,10 @@ namespace LocomotionStateMachine
         {
             foreach (var block in CommentBlocks)
             {
-                var nodes = block.containedElements.Where(x => x is LocomotionNode).Cast<LocomotionNode>().Select(x => x.GUID)
+                var nodes = block.containedElements.Where(x => x is BasicNode).Cast<BasicNode>().Select(x => x.GUID)
                     .ToList();
 
-                locomotionContainer.BlockData.Add(new BlockData
+                locomotionContainer.GroupDatas.Add(new GroupData
                 {
                     ChildNodes = nodes,
                     Title = block.title,
@@ -149,7 +148,9 @@ namespace LocomotionStateMachine
         /// </summary>
         private void ClearGraph()
         {
-            Nodes.Find(x => x.EntyPoint).GUID = _locomotionContainer.NodeLinks[0].BaseNodeGUID;
+            var rootNode = _locomotionContainer.NodeLinks.FirstOrDefault(x => x.BasePortName == "Root");
+            if(rootNode != null)
+                Nodes.Find(x => x.EntyPoint).GUID = rootNode.BaseNodeGUID;
             foreach (var perNode in Nodes)
             {
                 if (perNode.EntyPoint) continue;
@@ -213,8 +214,8 @@ namespace LocomotionStateMachine
             for (int i = 0; i < _locomotionContainer.NodeLinks.Count; i++)
             {
                 var connection = _locomotionContainer.NodeLinks[i];
-                var outputNode = Nodes.First(x => x.GUID == connection.BaseNodeGUID);
-                var inputNode = Nodes.First(x => x.GUID == connection.TargetNodeGUID);
+                BasicNode outputNode = Nodes.FirstOrDefault(x => x.GUID == connection.BaseNodeGUID);
+                BasicNode inputNode = Nodes.FirstOrDefault(x => x.GUID == connection.TargetNodeGUID);
                 Port outputPort = outputNode.outputContainer.Children().OfType<Port>().FirstOrDefault(x => x.portName == connection.BasePortName);
                 Port inputPort = inputNode.inputContainer.Children().OfType<Port>().FirstOrDefault(x => x.portName == connection.TargetPortName);
 
@@ -223,7 +224,7 @@ namespace LocomotionStateMachine
         }
         private void LinkNodesTogether(Port outputSocket, Port inputSocket)
         {
-            if(outputSocket == null && inputSocket == null)
+            if(outputSocket == null || inputSocket == null)
             {
                 Debug.LogError($"Input socket: {inputSocket.userData}\nOutput socket: {outputSocket.userData}");
                 return;
@@ -254,9 +255,9 @@ namespace LocomotionStateMachine
                 _graphView.RemoveElement(commentBlock);
             }
 
-            foreach (var commentBlockData in _locomotionContainer.BlockData)
+            foreach (var commentBlockData in _locomotionContainer.GroupDatas)
             {
-                var block = _graphView.CreateBlock(new Rect(commentBlockData.Position, _graphView.DefaultBlockSize),
+                var block = _graphView.CreateGroup(new Rect(commentBlockData.Position, _graphView.DefaultBlockSize),
                      commentBlockData);
                 block.AddElements(Nodes.Where(x => commentBlockData.ChildNodes.Contains(x.GUID)));
             }

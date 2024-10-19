@@ -1,16 +1,9 @@
-using Codice.Client.Commands.CheckIn;
-using Codice.CM.SEIDInfo;
-using JetBrains.Annotations;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using UnityEngine.UIElements;
 using static UnityEditor.Experimental.GraphView.Port;
 using Button = UnityEngine.UIElements.Button;
@@ -19,7 +12,9 @@ namespace LocomotionStateMachine
 {
     public class LocomotionGraphView : GraphView
     {
-        public readonly Vector2 DefaultNodeSize = new Vector2(200, 150);
+        public readonly Vector2 DefaultLocomotionNodeSize = new Vector2(200, 150);
+        public readonly Vector2 DefaultTransitionNodeSize = new Vector2(150, 100);
+        public readonly Vector2 DefaultConditionNodeSize = new Vector2(150, 100);
         public readonly Vector2 DefaultBlockSize = new Vector2(150, 100);
 
         public LocomotionNode EntryNode;
@@ -36,6 +31,9 @@ namespace LocomotionStateMachine
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
             this.AddManipulator(new FreehandSelector());
+            this.AddManipulator(CreateGroupContextMenu());
+            this.AddManipulator(RemoveGroupContextMenu());
+            OnElementsDelete();
 
             var grid = new GridBackground();
             Insert(0, grid);
@@ -47,6 +45,65 @@ namespace LocomotionStateMachine
             canPasteSerializedData += evt => true;
             serializeGraphElements += OnCopy;
             unserializeAndPaste += OnPaste;
+        }
+        private IManipulator CreateGroupContextMenu()
+        {
+            ContextualMenuManipulator groupMenuManipulator = new ContextualMenuManipulator(
+                menuEvent => menuEvent.menu.AppendAction("Add to Group", actionEvent => CreateGroup(new Rect(contentViewContainer.LocalToWorld(actionEvent.eventInfo.localMousePosition), DefaultBlockSize))));
+
+            return groupMenuManipulator;
+        }
+        private IManipulator RemoveGroupContextMenu()
+        {
+            ContextualMenuManipulator groupMenuManipulator = new ContextualMenuManipulator(
+                menuEvent => menuEvent.menu.AppendAction("Remove from Group", actionEvent => RemoveGroup()));
+
+            return groupMenuManipulator;
+        }
+        private void OnElementsDelete()
+        {
+            deleteSelection = (operationName, askUser) =>
+            {
+                Type groupType = typeof(Group);
+                Type edgeType = typeof(Edge);
+                List<BasicNode> nodes = new List<BasicNode>();
+                List<Edge> deleted_edges = new List<Edge>();
+                List<Group> groups = new List<Group>();
+
+                foreach (var selected in selection)
+                {
+                    if (selected is BasicNode node)
+                        nodes.Add(node);
+                    else if (selected is Edge edge)
+                        deleted_edges.Add(edge);
+                    else if (selected is Group group)
+                        groups.Add(group);
+                }
+                foreach (Group group in groups)
+                {
+                    List<BasicNode> basicNodes = group.containedElements.OfType<BasicNode>().ToList();
+                    group.RemoveElements(basicNodes);
+                }
+                DeleteElements(deleted_edges);
+                foreach (BasicNode node in nodes)
+                {
+                    var outputEdges = edges.ToList().Where(x => x.output.node == node);
+                    var inputEdges = edges.ToList().Where(x => x.input.node == node);
+                    foreach (Edge edge in outputEdges)
+                    {
+                        edge.input.Disconnect(edge);
+                        RemoveElement(edge);
+                    }
+                    foreach (Edge edge in inputEdges)
+                    {
+                        edge.output.Disconnect(edge);
+                        RemoveElement(edge);
+                    }
+                }
+                DeleteElements(nodes);
+                DeleteElements(groups);
+            };
+
         }
         private void AddSearchWindow(LocomotionGraph editorWindow)
         {
@@ -61,18 +118,41 @@ namespace LocomotionStateMachine
             if(Blackboard != null)
                 Blackboard.Clear();
         }
-        public Group CreateBlock(Rect rect, BlockData blockData = null)
+        public Group CreateGroup(Rect rect, GroupData blockData = null)
         {
             if (blockData == null)
-                blockData = new BlockData();
-            var group = new Group
+                blockData = new GroupData();
+            Group group = new Group
             {
                 autoUpdateGeometry = true,
                 title = blockData.Title
             };
+            foreach(GraphElement selected in selection)
+            {
+                if(selected is Node node)
+                    group.AddElement(node);
+            }
             AddElement(group);
             group.SetPosition(rect);
             return group;
+        }
+        public void RemoveGroup()
+        {
+            foreach (GraphElement selected in selection)
+            {
+                // if node has group, remove it from the group
+                if (selected is not BasicNode node)
+                    continue;
+                List<Group> groups = graphElements.ToList().Where(x => x is Group).Cast<Group>().ToList();
+                foreach(Group group in groups)
+                {
+                   if (group.containedElements.Contains(node))
+                    {
+                        group.RemoveElement(node);
+                        break;
+                    }
+                }
+            }
         }
         public void AddPropertyToBlackBoard(ExposedProperty property, bool loadMode = false)
         {
@@ -142,7 +222,7 @@ namespace LocomotionStateMachine
             LocomotionNode tempLocomotionNode = new LocomotionNode(nodeTitle, nodeName, false, inputOnly);
             tempLocomotionNode.RefreshExpandedState();
             tempLocomotionNode.RefreshPorts();
-            tempLocomotionNode.SetPosition(new Rect(position, DefaultNodeSize));
+            tempLocomotionNode.SetPosition(new Rect(position, DefaultLocomotionNodeSize));
             if (!inputOnly)
             {
                 tempLocomotionNode.OnDeletePort += (node, port) =>
@@ -183,14 +263,14 @@ namespace LocomotionStateMachine
             //tempConditionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
             tempConditionNode.RefreshExpandedState();
             tempConditionNode.RefreshPorts();
-            tempConditionNode.SetPosition(new Rect(position, DefaultNodeSize));
+            tempConditionNode.SetPosition(new Rect(position, DefaultConditionNodeSize));
             return tempConditionNode;
         }
         public TransitionNode CreateNode(StateTransition.BooleanOperator transitionOperator, Vector2 position)
         {
             TransitionNode tempTransitionNode = new TransitionNode(transitionOperator, false);
             //tempTransitionNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
-            tempTransitionNode.SetPosition(new Rect(position, DefaultBlockSize));
+            tempTransitionNode.SetPosition(new Rect(position, DefaultTransitionNodeSize));
             tempTransitionNode.OnDeletePort += (node, port) =>
             {
                 var targetEdge = edges.ToList()
@@ -214,7 +294,6 @@ namespace LocomotionStateMachine
         private LocomotionNode GetEntryPointNodeInstance()
         {
             LocomotionNode node = new LocomotionNode("ENTRY", "ENTRYPOINT", true, false);
-
             var generatedPort = GetPortInstance(node, Direction.Output);
             generatedPort.portName = "Root";
             node.outputContainer.Add(generatedPort);
@@ -287,7 +366,6 @@ namespace LocomotionStateMachine
             // store data in CopyCache
             return CopyCache;
         }
-        // TODO: Set Selection after copying and pasting
         public void OnPaste(string operationName, string data)
         {
             if (operationName != "Paste")
@@ -313,7 +391,6 @@ namespace LocomotionStateMachine
                 var nodePorts = tempContainer.NodeLinks.Where(x => x.BaseNodeGUID == guid).ToList();
                 foreach (var x in nodePorts)
                     tmpLNode.AddOutputPort(x.BasePortName);
-                //tmpLNode.SetPosition(new Rect(position, DefaultNodeSize));
                 AddElement(tmpLNode);
                 nodes.Add(tmpLNode as BasicNode);
             }

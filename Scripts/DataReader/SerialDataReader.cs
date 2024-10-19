@@ -11,19 +11,25 @@ namespace LocomotionStateMachine
     public class SerialDataReader : MonoBehaviour, IReader
     {
         [Header("Please check before you running the program.")]
-        public string COMPort;
+        public string LeftCOMPort="COM3";
+        public string RightCOMPort = "COM4";
         public bool Stop = false;
-        public int ToeOffset = 0;
-        public int HeelOffset = 0;
-        private SerialPort _mainSerialPort;
+
+        private Thread _serialThread;
+        private SerialPort _leftSerialPort;
+        private SerialPort _rightSerialPort;
         private int _bandrate = 115200;
         private float _initClock = 1.2f;
-        Thread myThread;
-        public int Toe = 0;
-        public int Heel = 0;
-        private bool isLeft = false;
 
-        private int _balancedNum = 100;
+        private int _leftToe = 0;
+        private int _leftHeel = 0;
+        private int _rightToe = 0;
+        private int _rightHeel = 0;
+
+        private int _leftToeOffset = 0;
+        private int _leftHeelOffset = 0;
+        private int _rightToeOffset = 0;
+        private int _rightHeelOffset = 0;
         // filter
         public static readonly Queue<Action> _executionQueue = new Queue<Action>();
 
@@ -45,69 +51,38 @@ namespace LocomotionStateMachine
         {
             if (Stop)
                 return;
-            if(isLeft)
-            {
-                OnValueChange?.Invoke(DeviceType.LeftToe, Toe);
-                OnValueChange?.Invoke(DeviceType.LeftHeel, Heel);
-            }
-            else
-            {
-                OnValueChange?.Invoke(DeviceType.RightToe, Toe);
-                OnValueChange?.Invoke(DeviceType.RightHeel, Heel);
-            }
-            //lock (_executionQueue)
-            //{
-            //    while (_executionQueue.Count > 0)
-            //    {
-            //        _executionQueue.Dequeue()?.Invoke();
-            //    }
-            //}
+            OnValueChange?.Invoke(DeviceType.LeftToe, _leftToe);
+            OnValueChange?.Invoke(DeviceType.LeftHeel, _leftHeel);
+            
+            OnValueChange?.Invoke(DeviceType.RightToe, _leftToe);
+            OnValueChange?.Invoke(DeviceType.RightHeel, _leftHeel);
         }
         public void Init()
         {
-            myThread = new Thread(new ThreadStart(Read));
-            myThread.Start();
+            _serialThread = new Thread(new ThreadStart(Read));
+            _serialThread.Start();
         }
         public void Read()
         {
-            
             try
             {
-                _mainSerialPort = new SerialPort(COMPort, _bandrate);
-                _mainSerialPort.Open();
+                _leftSerialPort = new SerialPort(LeftCOMPort, _bandrate);
+                _leftSerialPort.Open();
+                _rightSerialPort = new SerialPort(RightCOMPort, _bandrate);
+                _rightSerialPort.Open();
             }
             catch(InvalidCastException e)
             {
                 Debug.LogWarning(e.Message);
             }
-            List<int> toeValues = new List<int>();
-            List<int> heelValues = new List<int>();
-            while (myThread.IsAlive && _mainSerialPort.IsOpen)        // if serial is open then constantly read the line
+            while (_serialThread.IsAlive && _leftSerialPort.IsOpen && _rightSerialPort.IsOpen)        // if serial is open then constantly read the line
             {
                 try
                 {
                     if (Stop)
                         return;
-                    string[] getCommandLine = _mainSerialPort.ReadLine().Split(',');
-                    //foreach (string s in getCommandLine)
-                    //    Debug.Log(s);
-                    char foot = char.Parse(getCommandLine[0]);
-                    int toe = int.Parse(getCommandLine[1]) - ToeOffset;
-                    int heel = int.Parse(getCommandLine[2]) - HeelOffset;
-                    Toe = toe > 0 ? toe : 0;
-                    Heel = heel > 0 ? heel : 0;
-                    if (foot != 'R')
-                        isLeft = true;
-                    if(toeValues.Count < _balancedNum)
-                    {
-                        toeValues.Add(toe);
-                        heelValues.Add(heel);
-                    }
-                    else
-                    {
-                        ToeOffset = toeValues.Sum(x => Convert.ToInt32(x)) / _balancedNum;
-                        HeelOffset = heelValues.Sum(x => Convert.ToInt32(x)) / _balancedNum;
-                    }
+                    ParseData(_leftSerialPort.ReadLine());
+                    ParseData(_rightSerialPort.ReadLine());                    
                 }
                 catch (InvalidCastException e)
                 {
@@ -115,13 +90,58 @@ namespace LocomotionStateMachine
                 }
             }
         }
+        private List<int> _leftToeValues = new List<int>();
+        private List<int> _leftHeelValues = new List<int>();
+        private List<int> _rightToeValues = new List<int>();
+        private List<int> _rightHeelValues = new List<int>();
+
+        private int _balancedNum = 100;
+        private void ParseData(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+                return;
+            string[] datas = line.Split(',');
+            char foot = char.Parse(datas[0]);
+            if (foot == 'R')
+            {
+                if (_rightToeValues.Count < _balancedNum)
+                {
+                    _rightToeValues.Add(int.Parse(datas[1]));
+                    _rightHeelValues.Add(int.Parse(datas[2]));
+                }
+                else
+                {
+                    _rightToeOffset = _rightToeValues.Sum(x => Convert.ToInt32(x)) / _balancedNum;
+                    _rightHeelOffset = _rightHeelValues.Sum(x => Convert.ToInt32(x)) / _balancedNum;
+                }
+                _rightToe = int.Parse(datas[1]) > _rightToeOffset ? int.Parse(datas[1]) - _rightToeOffset : 0;
+                _rightHeel = int.Parse(datas[2]) > _rightHeelOffset ? int.Parse(datas[2]) - _rightHeelOffset : 0;
+                return;
+            }
+            else if (foot == 'L')
+            {
+                if (_leftToeValues.Count < _balancedNum)
+                {
+                    _leftToeValues.Add(int.Parse(datas[1]));
+                    _leftHeelValues.Add(int.Parse(datas[2]));
+                }
+                else
+                {
+                    _leftToeOffset = _leftToeValues.Sum(x => Convert.ToInt32(x)) / _balancedNum;
+                    _leftHeelOffset = _leftHeelValues.Sum(x => Convert.ToInt32(x)) / _balancedNum;
+                }
+
+                _leftToe = int.Parse(datas[1]) > _leftToeOffset ? int.Parse(datas[1]) - _leftToeOffset : 0;
+                _leftHeel = int.Parse(datas[2]) > _leftHeelOffset ? int.Parse(datas[2]) - _leftHeelOffset : 0;
+            }
+        }
         public void Quit()
         {
             _executionQueue.Clear();
-            if (_mainSerialPort.IsOpen)
-                _mainSerialPort.Close();
-            if (myThread.IsAlive)
-                myThread.Abort();
+            if (_leftSerialPort.IsOpen)
+                _leftSerialPort.Close();
+            if (_serialThread.IsAlive)
+                _serialThread.Abort();
         }
         private void OnApplicationQuit()
         {

@@ -1,5 +1,5 @@
 TransitionNode #title {
-    background-color: rgba(37, 150, 190, 0.91);
+    background-color: rgba(183, 138, 55, 0.9);
 }
 
 TransitionNode .mainContainer {

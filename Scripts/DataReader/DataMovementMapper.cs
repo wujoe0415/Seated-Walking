@@ -208,8 +208,6 @@ namespace LocomotionStateMachine {
                     SetDeviceMovement(s, Movement.Step);
             }
             _hasUpdated[(int)s] = true;
-            if (_hasUpdated[0] & _hasUpdated[1] & _hasUpdated[2] & _hasUpdated[3])
-                UpdateMovement();
         }
         public Movement GetDeviceMovement(DeviceType device)
         {
@@ -251,6 +249,18 @@ namespace LocomotionStateMachine {
             }
             else
                 OnChangeState?.Invoke(CurrentShoesStates, true);
+        }
+        
+        private void Update()
+        {
+            if (_hasUpdated[0] & _hasUpdated[1] & _hasUpdated[2] & _hasUpdated[3])
+            {
+                UpdateMovement();
+                _hasUpdated[0] = false;
+                _hasUpdated[1] = false;
+                _hasUpdated[2] = false;
+                _hasUpdated[3] = false;
+            }
         }
     }
 }

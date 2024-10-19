@@ -49,7 +49,6 @@ namespace LocomotionStateMachine
                 for (int j = 0; j < stateGraph[i].Conditions.Count; j++)
                     stateGraph[i].Conditions[j].ResetCondition();
         }
-        [HideInInspector]
         public GameObject Player;
         [Tooltip("Once entering the state, call this event.")]
         public UnityEvent OnStateAction;

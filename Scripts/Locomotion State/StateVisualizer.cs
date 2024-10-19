@@ -87,13 +87,15 @@ namespace LocomotionStateMachine
                 return;
             }
             HashSet<string> existingKeys = new HashSet<string>();
-            foreach (var locomotionKey in FindObjectOfType<LocomotionParser>().StateMaps)
-                existingKeys.Add(locomotionKey.key);
-            foreach (string key in existingKeys)
+            foreach (var locomotionKey in Icons)
+                existingKeys.Add(locomotionKey.LocomotionStateName);
+            foreach (LocomotionParser.StateMap state in FindObjectOfType<LocomotionParser>().StateMaps)
             {
+                if(existingKeys.Contains(state.key))
+                    continue;
                 Icons.Add(new VisualizeData
                 {
-                    LocomotionStateName = key,
+                    LocomotionStateName = state.key,
                     Icon = null
                 });
             }

@@ -9,9 +9,10 @@ namespace LocomotionStateMachine
     {
         public bool Stop = false;
         public static Action<DeviceType, int> OnValueChange;
-        public bool isLeft = true;
-        public KeyCode Toe = KeyCode.Q;
-        public KeyCode Heel = KeyCode.A;
+        public KeyCode LeftToe = KeyCode.Q;
+        public KeyCode LeftHeel = KeyCode.A;
+        public KeyCode RightToe = KeyCode.W;
+        public KeyCode RightHeel = KeyCode.S;
 
         private void Update()
         {
@@ -26,14 +27,23 @@ namespace LocomotionStateMachine
             if (Stop)
                 return;
 
-            if (Input.GetKey(Toe))
-                OnValueChange?.Invoke(isLeft? DeviceType.LeftToe: DeviceType.RightToe, 10);
+            if (Input.GetKey(LeftToe))
+                OnValueChange?.Invoke(DeviceType.LeftToe, 10);
             else
-                OnValueChange?.Invoke(isLeft ? DeviceType.LeftToe : DeviceType.RightToe, 800);
-            if (Input.GetKey(Heel))
-                OnValueChange?.Invoke(isLeft ? DeviceType.LeftHeel : DeviceType.RightHeel, 10);
+                OnValueChange?.Invoke(DeviceType.LeftToe, 800);
+            if (Input.GetKey(LeftHeel))
+                OnValueChange?.Invoke(DeviceType.LeftHeel, 10);
             else
-                OnValueChange?.Invoke(isLeft ? DeviceType.LeftHeel : DeviceType.RightHeel, 800);
+                OnValueChange?.Invoke(DeviceType.LeftHeel, 800);
+
+            if (Input.GetKey(RightToe))
+                OnValueChange?.Invoke(DeviceType.RightToe, 10);
+            else
+                OnValueChange?.Invoke(DeviceType.RightToe, 800);
+            if (Input.GetKey(RightHeel))
+                OnValueChange?.Invoke(DeviceType.RightHeel, 10);
+            else
+                OnValueChange?.Invoke(DeviceType.RightHeel, 800);
         }
         public void Quit()
         {
