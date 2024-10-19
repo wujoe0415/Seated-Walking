@@ -12,23 +12,36 @@ namespace LocomotionStateMachine
         {
             base.title = "Last Device State";
             // Dropdown for LastDeviceState
+            VisualElement upper = new VisualElement();
+            upper.style.flexDirection = FlexDirection.Row;
+            Label label = new Label("Condition");
+            label.style.width = 50;
             Condition.LastDeviceState = condition.LastDeviceState == HistoryState.Any?HistoryState.LastSteppedToe : condition.LastDeviceState;
-            EnumField lastStateField = new EnumField("Condition", Condition.LastDeviceState);
+            EnumField lastStateField = new EnumField(Condition.LastDeviceState);
             lastStateField.RegisterValueChangedCallback(evt =>
             {
                 Condition.LastDeviceState = (HistoryState)evt.newValue;
             });
-            mainContainer.Add(lastStateField);
+            upper.Add(label);
+            upper.Add(lastStateField);
+            upper.style.width = 180;
+            mainContainer.Add(upper);
 
             // Dropdown for DeviceType
+            VisualElement lower = new VisualElement();
+            lower.style.flexDirection = FlexDirection.Row;
+            Label deviceLabel = new Label("was");
             Condition.Device = condition.Device;
-            EnumField deviceTypeField = new EnumField("was", Condition.Device);
+            deviceLabel.style.width = 50;
+            EnumField deviceTypeField = new EnumField(Condition.Device);
             deviceTypeField.RegisterValueChangedCallback(evt =>
             {
                 Condition.Device = (DeviceType)evt.newValue;
             });
-            mainContainer.Add(deviceTypeField);
-
+            lower.Add(deviceLabel);
+            lower.Add(deviceTypeField);
+            lower.style.width = 180;
+            mainContainer.Add(lower);
             RefreshPorts();
             RefreshExpandedState();
         }

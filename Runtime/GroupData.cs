@@ -5,6 +5,7 @@ using UnityEngine;
 namespace LocomotionStateMachine
 {
     [SerializeField]
+    [System.Serializable]
     public class GroupData
     {
         public List<string> ChildNodes = new List<string>();

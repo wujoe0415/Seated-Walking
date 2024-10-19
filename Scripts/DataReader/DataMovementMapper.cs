@@ -27,11 +27,13 @@ namespace LocomotionStateMachine {
         public DeviceType Device;
         public bool IsDown;
         public float Time;
+        public int Value;
         public ShoeState(DeviceType device, bool isDown, float time)
         {
             Device = device;
             IsDown = isDown;
             Time = time;
+            Value = 0;
         }
     }
     [System.Serializable]
@@ -156,8 +158,8 @@ namespace LocomotionStateMachine {
         [SerializeField]
         private MovementEnumerator PreviousShoesStates = new MovementEnumerator();
         public MovementEnumerator CurrentShoesStates = new MovementEnumerator();
-        public int RaiseThreshold = 500;
-        public float StepThreshold = 0f;
+        public int RaiseThreshold = 100;
+        public int StepThreshold = 80;
         //public DataReader[] SerialDataReader;
 
         public Action<MovementEnumerator, bool> OnChangeState;
@@ -188,21 +190,23 @@ namespace LocomotionStateMachine {
         public void UpdateValue(DeviceType s, int value)
         {
             ShoeStates[(int)s].Time += Time.deltaTime;
+            ShoeStates[(int)s].Value = value;
 
-            if (ShoeStates[(int)s].IsDown != value < RaiseThreshold)
+            bool curDown = ShoeStates[(int)s].IsDown ? value < RaiseThreshold : value < StepThreshold;
+            if (ShoeStates[(int)s].IsDown != curDown)
                 ShoeStates[(int)s].Time = 0;
-            ShoeStates[(int)s].IsDown = value < RaiseThreshold;
+            ShoeStates[(int)s].IsDown = curDown;
 
             if (value > RaiseThreshold) 
             {
-                if (ShoeStates[(int)s].Time > StepThreshold)
+                if (ShoeStates[(int)s].Time > 0)
                     SetDeviceMovement(s, Movement.Hang);
                 else
                     SetDeviceMovement(s, Movement.Raise);
             }
             else
             {
-                if (ShoeStates[(int)s].Time > StepThreshold)
+                if (ShoeStates[(int)s].Time > 0)
                     SetDeviceMovement(s, Movement.Ground);
                 else
                     SetDeviceMovement(s, Movement.Step);
@@ -233,6 +237,7 @@ namespace LocomotionStateMachine {
         }
         public void UpdateMovement() 
         {
+            Debug.Log("Update Movement");
             // Change state
             if (PreviousShoesStates.LeftToe != CurrentShoesStates.LeftToe ||
                 PreviousShoesStates.LeftHeel != CurrentShoesStates.LeftHeel ||

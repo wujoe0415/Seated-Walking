@@ -14,7 +14,7 @@ namespace LocomotionStateMachine
     {
         public readonly Vector2 DefaultLocomotionNodeSize = new Vector2(200, 150);
         public readonly Vector2 DefaultTransitionNodeSize = new Vector2(150, 100);
-        public readonly Vector2 DefaultConditionNodeSize = new Vector2(150, 100);
+        public readonly Vector2 DefaultConditionNodeSize = new Vector2(100, 50);
         public readonly Vector2 DefaultBlockSize = new Vector2(150, 100);
 
         public LocomotionNode EntryNode;

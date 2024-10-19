@@ -63,25 +63,13 @@ namespace LocomotionStateMachine
             LocomotionState nextState = CurrentState.ChangeState(currentState, isMoniter);
             if (nextState != null)
             {
-                Debug.Log(currentState.LeftToe + " " + currentState.LeftHeel + " " + currentState.RightToe + " " +currentState.RightHeel);
-                Debug.Log(nextState.State);
                 CurrentState.ResetState();
                 _visualizer?.HideIcon();
                 CurrentState = nextState;
-                //_idleTimer = 0f;
                 CurrentState.ResetState();
                 CurrentState.StateAction();
                 _visualizer?.ShowIcon(CurrentState.State);
             }
-            //else
-            //{
-            //    _idleTimer += Time.deltaTime;
-            //    if (_idleTimer > IdleThreshold)
-            //    {
-            //        CurrentState = _stateGraph[0];
-            //        _idleTimer = 0f;
-            //    }
-            //}
         }
     }
 }

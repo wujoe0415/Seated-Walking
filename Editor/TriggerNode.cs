@@ -13,7 +13,6 @@ namespace LocomotionStateMachine {
         {
             base.title = "Trigger Condition";
 
-            mainContainer.Add(new Label("Trigger Movement"));
             mainContainer.Add(CreateMovementEnumeratorUI());
 
             RefreshPorts();
@@ -24,31 +23,44 @@ namespace LocomotionStateMachine {
         {
             // Container for MovementEnumerator
             VisualElement container = new VisualElement();
-            container.style.paddingLeft = 10;
 
             // Add movement fields
-            container.Add(CreateMovementField("Left Toe", Condition.TriggerMovement.LeftToe, newValue => Condition.TriggerMovement.LeftToe = newValue));
-            container.Add(CreateMovementField("Left Heel", Condition.TriggerMovement.LeftHeel, newValue => Condition.TriggerMovement.LeftHeel = newValue));
-            container.Add(CreateMovementField("Right Toe", Condition.TriggerMovement.RightToe, newValue => Condition.TriggerMovement.RightToe = newValue));
-            container.Add(CreateMovementField("Right Heel", Condition.TriggerMovement.RightHeel, newValue => Condition.TriggerMovement.RightHeel = newValue));
+            container.Add(CreateMovementField("Left Toe", Condition.TriggerMovement.LeftToe, newValue => Condition.TriggerMovement.LeftToe = newValue,
+                                              "Right Toe", Condition.TriggerMovement.RightToe, newValue => Condition.TriggerMovement.RightToe = newValue));
+            container.Add(CreateMovementField("Left Heel", Condition.TriggerMovement.LeftHeel, newValue => Condition.TriggerMovement.LeftHeel = newValue,
+                                              "Right Heel", Condition.TriggerMovement.RightHeel, newValue => Condition.TriggerMovement.RightHeel = newValue));
 
             return container;
         }
-        private VisualElement CreateMovementField(string label, Movement currentValue, System.Action<Movement> onValueChanged)
+        private VisualElement CreateMovementField(string label1, Movement currentValue1, System.Action<Movement> onValueChanged1,
+                                                  string label2, Movement currentValue2, System.Action<Movement> onValueChanged2)
         {
             VisualElement fieldContainer = new VisualElement();
             fieldContainer.style.flexDirection = FlexDirection.Row;
-
-            Label fieldLabel = new Label(label);
-            EnumFlagsField movementField = new EnumFlagsField(currentValue);
-            movementField.RegisterValueChangedCallback(evt =>
+            fieldContainer.style.width = 160;
+            Label fieldLabel = new Label(label1);
+            EnumFlagsField movementField1 = new EnumFlagsField(currentValue1);
+            movementField1.RegisterValueChangedCallback(evt =>
             {
-                onValueChanged((Movement)evt.newValue);
+                onValueChanged1((Movement)evt.newValue);
             });
-
-            fieldContainer.Add(fieldLabel);
-            fieldContainer.Add(movementField);
-
+            Label fieldLabel2 = new Label(label2);
+            EnumFlagsField movementField2 = new EnumFlagsField(currentValue2);
+            movementField2.RegisterValueChangedCallback(evt =>
+            {
+                onValueChanged2((Movement)evt.newValue);
+            });
+            VisualElement left = new VisualElement();
+            left.style.width = 80;
+            left.Add(fieldLabel);
+            left.Add(movementField1);
+            fieldContainer.Add(left);
+            VisualElement right = new VisualElement();
+            right.style.width = 80;
+            right.Add(fieldLabel2);
+            right.Add(movementField2);
+            fieldContainer.Add(right);
+            
             return fieldContainer;
         }
     }

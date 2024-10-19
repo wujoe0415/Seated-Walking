@@ -158,6 +158,10 @@ namespace LocomotionStateMachine
                     .ForEach(edge => _graphView.RemoveElement(edge));
                 _graphView.RemoveElement(perNode);
             }
+            foreach(var perNode in CommentBlocks)
+            {
+                _graphView.RemoveElement(perNode);
+            }
         }
 
         /// <summary>
@@ -254,7 +258,7 @@ namespace LocomotionStateMachine
             {
                 _graphView.RemoveElement(commentBlock);
             }
-
+            
             foreach (var commentBlockData in _locomotionContainer.GroupDatas)
             {
                 var block = _graphView.CreateGroup(new Rect(commentBlockData.Position, _graphView.DefaultBlockSize),
