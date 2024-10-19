@@ -1,5 +1,4 @@
 
-using Oculus.Interaction.Samples;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -8,7 +7,6 @@ using UnityEngine.UI;
 
 namespace LocomotionStateMachine
 {
-
     public class StateVisualizer : MonoBehaviour
     {
         [System.Serializable]
@@ -79,6 +77,25 @@ namespace LocomotionStateMachine
                 Color color = Icons[i].Icon.GetComponent<RawImage>().color;
                 Icons[i].Icon.color = new Color(color.r, color.b, color.g, 1);
                 Icons[i].Icon.gameObject.SetActive(false);
+            }
+        }
+        private void OnValidate()
+        {
+            if (FindObjectOfType<LocomotionParser>() == null)
+            {
+                Icons.Clear();
+                return;
+            }
+            HashSet<string> existingKeys = new HashSet<string>();
+            foreach (var locomotionKey in FindObjectOfType<LocomotionParser>().StateMaps)
+                existingKeys.Add(locomotionKey.key);
+            foreach (string key in existingKeys)
+            {
+                Icons.Add(new VisualizeData
+                {
+                    LocomotionStateName = key,
+                    Icon = null
+                });
             }
         }
     }

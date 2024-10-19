@@ -164,7 +164,6 @@ namespace LocomotionStateMachine
         /// </summary>
         private void GenerateNodes()
         {
-            // TODO: handle jump case
             foreach (var perNode in _locomotionContainer.LocomotionNodeData)
             {
                 string guid = perNode.NodeGUID;

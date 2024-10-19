@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Resources;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,7 +16,7 @@ namespace LocomotionStateMachine
         public class StateMap
         {
             public string key;
-            public MonoBehaviour value;
+            public LocomotionState value;
         }
 
         public StateMachineContainer Container;
@@ -91,26 +90,24 @@ namespace LocomotionStateMachine
         {
             // Initialize the container if it hasn¡¦t been set
             if (Container == null)
+            {
+                StateMaps.Clear();
                 return;
-
+            }
             // Create a HashSet of keys from the List for quick lookup
             HashSet<string> existingKeys = new HashSet<string>();
-            foreach (var stateMap in StateMaps)
-            {
-                existingKeys.Add(stateMap.key);
-            }
-
-            // Add missing keys from LocomotionNodeData to the List
+            foreach (var locomotionKey in StateMaps)
+                existingKeys.Add(locomotionKey.key);
             foreach (var locomotionNode in Container.LocomotionNodeData)
             {
-                if (!existingKeys.Contains(locomotionNode.LocomotionStateName))
+                if (existingKeys.Contains(locomotionNode.LocomotionStateName))
+                    continue;
+                existingKeys.Add(locomotionNode.LocomotionStateName);
+                StateMaps.Add(new StateMap
                 {
-                    StateMaps.Add(new StateMap
-                    {
-                        key = locomotionNode.LocomotionStateName,
-                        value = null
-                    });
-                }
+                    key = locomotionNode.LocomotionStateName,
+                    value = null
+                });
             }
         }
     }

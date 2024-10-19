@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace LocomotionStateMachine
 {
+    [Serializable]
     public class StateMachineContainer : ScriptableObject
     {
         public List<NodeLinkData> NodeLinks = new List<NodeLinkData>();

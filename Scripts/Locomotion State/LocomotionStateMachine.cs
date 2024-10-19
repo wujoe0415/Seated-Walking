@@ -63,6 +63,8 @@ namespace LocomotionStateMachine
             LocomotionState nextState = CurrentState.ChangeState(currentState, isMoniter);
             if (nextState != null)
             {
+                Debug.Log(currentState.LeftToe + " " + currentState.LeftHeel + " " + currentState.RightToe + " " +currentState.RightHeel);
+                Debug.Log(nextState.State);
                 CurrentState.ResetState();
                 _visualizer?.HideIcon();
                 CurrentState = nextState;

@@ -10,7 +10,6 @@ namespace LocomotionStateMachine
     }
     public class LocomotionState : MonoBehaviour, IMovement
     {
-        [SerializeField]
         protected string _state = "Idle";
         public string State
         {
@@ -23,16 +22,14 @@ namespace LocomotionStateMachine
                 _state = value;
             }
         }
-
+        [HideInInspector]
         public List<StateTransition> stateGraph = new List<StateTransition>();
         public LocomotionState ChangeState(MovementEnumerator currentState, bool isMoniter = false)
         {
-            foreach (StateTransition state in stateGraph)
+            for (int i = 0;i< stateGraph.Count;i++)
             {
-                if (state.CanTransit(currentState, isMoniter))
-                {
-                    return state.NextState;
-                }
+                if (stateGraph[i].CanTransit(currentState, isMoniter))
+                    return stateGraph[i].NextState;
             }
             return null;
         }
@@ -55,7 +52,7 @@ namespace LocomotionStateMachine
         public void OnEnable()
         {
             if (Player == null)
-                Player = GameObject.FindObjectOfType<OVRCameraRig>().gameObject;
+                Player = GameObject.FindWithTag("Player");
         }
         public virtual void StateAction()
         {

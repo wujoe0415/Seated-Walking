@@ -27,11 +27,11 @@ namespace LocomotionStateMachine
                 return;
 
             if (Input.GetKey(Toe))
-                OnValueChange?.Invoke(isLeft? DeviceType.LeftToe: DeviceType.RightToe, 60);
+                OnValueChange?.Invoke(isLeft? DeviceType.LeftToe: DeviceType.RightToe, 10);
             else
                 OnValueChange?.Invoke(isLeft ? DeviceType.LeftToe : DeviceType.RightToe, 800);
             if (Input.GetKey(Heel))
-                OnValueChange?.Invoke(isLeft ? DeviceType.LeftHeel : DeviceType.RightHeel, 60);
+                OnValueChange?.Invoke(isLeft ? DeviceType.LeftHeel : DeviceType.RightHeel, 10);
             else
                 OnValueChange?.Invoke(isLeft ? DeviceType.LeftHeel : DeviceType.RightHeel, 800);
         }

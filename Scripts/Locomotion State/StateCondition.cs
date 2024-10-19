@@ -40,23 +40,27 @@ namespace LocomotionStateMachine {
         public bool IsSatisfied(MovementEnumerator c, bool isMoniter)
         {
             if (!isMoniter)
-                return isMatch(TriggerMovement, c) & isMatchHistory();
+            {
+                return isTrigger(c) & isMatchHistory();
+            }
             else
+            {
                 return checkDuration(c) & isMatchHistory();
+            }
         }
-        private bool isMatch(MovementEnumerator m1, MovementEnumerator m2)
+        private bool isMatch(MovementEnumerator m1)
         {
             bool[] flags = new bool[4];
             for (int i = 0; i < flags.Length; i++)
                 flags[i] = false;
 
-            if (m1.LeftToe.HasFlag(m2.LeftToe))
+            if (TriggerMovement.LeftToe.HasFlag(m1.LeftToe))
                 flags[0] = true;
-            if (m1.LeftHeel.HasFlag(m2.LeftHeel))
+            if (TriggerMovement.LeftHeel.HasFlag(m1.LeftHeel))
                 flags[1] = true;
-            if (m1.RightToe.HasFlag(m2.RightToe))
+            if (TriggerMovement.RightToe.HasFlag(m1.RightToe))
                 flags[2] = true;
-            if (m1.RightHeel.HasFlag(m2.RightHeel))
+            if (TriggerMovement.RightHeel.HasFlag(m1.RightHeel))
                 flags[3] = true;
             return flags[0] & flags[1] & flags[2] & flags[3];
         }
@@ -71,15 +75,26 @@ namespace LocomotionStateMachine {
             else
                 return e.RightHeel.HasFlag(m);
         }
+        private bool isTrigger(MovementEnumerator e)
+        {
+            //Debug.Log("isTrigger: " + isMatch(e));
+            if (Duration > 0 || !isMatch(e))
+            {
+                _currentDuration = 0;
+                return false;
+            }
+            return isMatch(e);
+        }
         private bool checkDuration(MovementEnumerator e)
         {
             if (Duration == 0f)
                 return false;
-
-            if (isMatch(TriggerMovement, e))
+            if (isMatch(e))
             {
                 if (_currentDuration > Duration)
+                {
                     return true;
+                }
                 else
                     _currentDuration += Time.deltaTime;
             }

@@ -230,18 +230,142 @@ namespace LocomotionStateMachine
         }
         public string CopyCache = "";
         
-        // TODO: Copy and Paste operations
         public string OnCopy(IEnumerable<GraphElement> elements)
         {
             CopyCache = "";
+            StateMachineContainer tempContainer = ScriptableObject.CreateInstance<StateMachineContainer>();
+            foreach (GraphElement element in elements)
+            {
+                BasicNode node = element as BasicNode;
+                // Save Nodes
+                if(node != null)
+                {
+                    // determine if node is a condition node or locomotion node
+                    switch (node.Type)
+                    {
+                        case BasicNode.NodeType.Condition:
+                            var tmpCNode = node as ConditionNode;
+                            string guid = tmpCNode.GUID;
+                            Vector2 position = tmpCNode.GetPosition().position;
+                            tempContainer.ConditionNodeData.Add(new ConditionNodeData { NodeGUID = guid, Position = position, Condition = tmpCNode.Condition });
+                            break;
+                        case BasicNode.NodeType.Transition:
+                            var tmpTNode = node as TransitionNode;
+                            guid = tmpTNode.GUID;
+                            position = tmpTNode.GetPosition().position;
+                            tempContainer.TransitionNodeData.Add(new TransitionNodeData { NodeGUID = guid, Position = position, Operator = tmpTNode.Operator });
+                            break;
+                        case BasicNode.NodeType.Locomotion:
+                            var tmpLNode = node as LocomotionNode;
+                            guid = tmpLNode.GUID;
+                            position = tmpLNode.GetPosition().position;
+                            tempContainer.LocomotionNodeData.Add(new LocomotionNodeData { NodeGUID = guid, Position = position, LocomotionStateName = tmpLNode.StateName });
+                            break;
+                    }
+                    continue;
+                }
+                Edge connectedSockets = element as Edge;
+                if(connectedSockets != null)
+                {
+                    // Save Edges
+                    var outputNode = (connectedSockets.output.node as BasicNode);
+                    var inputNode = (connectedSockets.input.node as BasicNode);
+                    tempContainer.NodeLinks.Add(new NodeLinkData
+                    {
+                        BaseNodeGUID = outputNode.GUID,
+                        BasePortName = connectedSockets.output.portName,
+                        TargetPortName = connectedSockets.input.portName,
+                        TargetNodeGUID = inputNode.GUID
+                    });
+                    continue;
+                }
+
+                Debug.LogError("Other data but not store in the graph!");
+            }
+
+            CopyCache = JsonUtility.ToJson(tempContainer);
             // store data in CopyCache
             return CopyCache;
         }
+        // TODO: Set Selection after copying and pasting
         public void OnPaste(string operationName, string data)
         {
             if (operationName != "Paste")
                 return;
-            Debug.Log(operationName + " " +  data);
+
+            ClearSelection();
+            StateMachineContainer tempContainer = ScriptableObject.CreateInstance<StateMachineContainer>();
+            JsonUtility.FromJsonOverwrite(data, tempContainer);
+            // new -> origin
+            Dictionary<string, string> guidMapper = new Dictionary<string, string>();
+            List<BasicNode> nodes = new List<BasicNode>();
+            Vector2 offsetPosition = new Vector2(90f, 90f);
+
+            foreach (var perNode in tempContainer.LocomotionNodeData)
+            {
+                string guid = perNode.NodeGUID;
+                Vector2 position = perNode.Position + offsetPosition;
+                if (string.IsNullOrEmpty(guid)) continue;
+                bool inputOnly = !(tempContainer.NodeLinks.Any(x => x.BaseNodeGUID == guid));
+                string title = inputOnly ? $"Jump to {perNode.LocomotionStateName}" : perNode.LocomotionStateName;
+                LocomotionNode tmpLNode = CreateNode(title, perNode.LocomotionStateName, position, inputOnly);
+                guidMapper.Add(guid, tmpLNode.GUID);
+                var nodePorts = tempContainer.NodeLinks.Where(x => x.BaseNodeGUID == guid).ToList();
+                foreach (var x in nodePorts)
+                    tmpLNode.AddOutputPort(x.BasePortName);
+                //tmpLNode.SetPosition(new Rect(position, DefaultNodeSize));
+                AddElement(tmpLNode);
+                nodes.Add(tmpLNode as BasicNode);
+            }
+            foreach (var perNode in tempContainer.ConditionNodeData)
+            {
+                string guid = perNode.NodeGUID;
+                Vector2 position = perNode.Position + offsetPosition;
+                if (string.IsNullOrEmpty(guid)) continue;
+                var tempCNode = CreateNode(perNode.Condition, position, typeof(ConditionNode));
+                guidMapper.Add(guid, tempCNode.GUID); 
+                AddElement(tempCNode);
+                nodes.Add(tempCNode as BasicNode);
+            }
+            foreach (var perNode in tempContainer.TransitionNodeData)
+            {
+                string guid = perNode.NodeGUID;
+                Vector2 position = perNode.Position + offsetPosition;
+                if (string.IsNullOrEmpty(guid)) continue;
+
+                var tempTNode = CreateNode(perNode.Operator, position);
+                guidMapper.Add(guid, tempTNode.GUID);
+                var nodePorts = tempContainer.NodeLinks.Where(x => x.TargetNodeGUID == guid).ToList();
+                foreach (var x in nodePorts)
+                {
+                    if (x.TargetPortName != "Input State")
+                        tempTNode.AddInputPort(x.TargetPortName);
+                }
+                AddElement(tempTNode);
+                nodes.Add(tempTNode as BasicNode);
+            }
+
+            // Node Link
+            foreach (var connection in tempContainer.NodeLinks)
+            {
+                if (!guidMapper.ContainsKey(connection.BaseNodeGUID) || !guidMapper.ContainsKey(connection.TargetNodeGUID))
+                    continue;
+                var outputNode = nodes.First(x => x.GUID == guidMapper[connection.BaseNodeGUID]);
+                var inputNode = nodes.First(x => x.GUID == guidMapper[connection.TargetNodeGUID]);
+                Port outputPort = outputNode.outputContainer.Children().OfType<Port>().FirstOrDefault(x => x.portName == connection.BasePortName);
+                Port inputPort = inputNode.inputContainer.Children().OfType<Port>().FirstOrDefault(x => x.portName == connection.TargetPortName);
+                var tempEdge = new Edge()
+                {
+                    output = outputPort,
+                    input = inputPort
+                };
+                tempEdge?.input.Connect(tempEdge);
+                tempEdge?.output.Connect(tempEdge);
+                Add(tempEdge);
+            }
+
+            foreach (var node in nodes)
+                AddToSelection(node);
         }
     }
 }

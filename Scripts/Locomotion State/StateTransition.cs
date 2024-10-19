@@ -1,5 +1,6 @@
 using LocomotionStateMachine;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LocomotionStateMachine
 {
