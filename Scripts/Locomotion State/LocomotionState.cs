@@ -22,14 +22,19 @@ namespace LocomotionStateMachine
                 _state = value;
             }
         }
-        [HideInInspector]
+
         public List<StateTransition> stateGraph = new List<StateTransition>();
         public LocomotionState ChangeState(MovementEnumerator currentState, bool isMoniter = false)
         {
+            // Debug.Log(currentState.LeftToe + " " + currentState.LeftHeel + " " + currentState.RightToe + " " + currentState.RightHeel);
             for (int i = 0;i< stateGraph.Count;i++)
             {
+                // Debug.Log(stateGraph[i].CanTransit(currentState, isMoniter));
                 if (stateGraph[i].CanTransit(currentState, isMoniter))
+                {
+                    //Debug.Log($"Transition {i} achieve, go to {stateGraph[i].NextState}.");
                     return stateGraph[i].NextState;
+                }
             }
             return null;
         }
