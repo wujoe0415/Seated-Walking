@@ -237,7 +237,6 @@ namespace LocomotionStateMachine {
         }
         public void UpdateMovement() 
         {
-            Debug.Log("Update Movement");
             // Change state
             if (PreviousShoesStates.LeftToe != CurrentShoesStates.LeftToe ||
                 PreviousShoesStates.LeftHeel != CurrentShoesStates.LeftHeel ||

@@ -77,10 +77,8 @@ namespace LocomotionStateMachine {
         }
         private bool isTrigger(MovementEnumerator e)
         {
-            //Debug.Log("isTrigger: " + isMatch(e));
-            if (Duration > 0 || !isMatch(e))
+            if (Duration > 0)
             {
-                _currentDuration = 0;
                 return false;
             }
             return isMatch(e);

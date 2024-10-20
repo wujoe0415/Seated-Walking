@@ -29,18 +29,8 @@ namespace LocomotionStateMachine
         private int _leftHeelOffset = 0;
         private int _rightToeOffset = 0;
         private int _rightHeelOffset = 0;
-        // filter
-        public static readonly Queue<Action> _executionQueue = new Queue<Action>();
 
         public static Action<DeviceType, int> OnValueChange;
-        //private IEnumerator ArduinoInput;
-        private void Enqueue(Action action)
-        {
-            lock (_executionQueue)
-            {
-                _executionQueue.Enqueue(action);
-            }
-        }
         
         private void OnEnable()
         {
@@ -136,10 +126,9 @@ namespace LocomotionStateMachine
         }
         public void Quit()
         {
-            _executionQueue.Clear();
-            if (_leftThread.IsAlive)
+            if (_leftThread!= null && _leftThread.IsAlive)
                 _leftThread.Abort();
-            if (_rightThread.IsAlive)
+            if (_rightThread != null && _rightThread.IsAlive)
                 _rightThread.Abort();
         }
         private void OnApplicationQuit()

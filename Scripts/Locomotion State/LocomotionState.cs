@@ -22,7 +22,7 @@ namespace LocomotionStateMachine
                 _state = value;
             }
         }
-
+        [HideInInspector]
         public List<StateTransition> stateGraph = new List<StateTransition>();
         public LocomotionState ChangeState(MovementEnumerator currentState, bool isMoniter = false)
         {
@@ -57,6 +57,10 @@ namespace LocomotionStateMachine
         {
             if (Player == null)
                 Player = GameObject.FindWithTag("Player");
+        }
+        public void OnDisable()
+        {
+            stateGraph.Clear();
         }
         public virtual void StateAction()
         {
