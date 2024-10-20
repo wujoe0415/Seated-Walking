@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace LocomotionStateMachine
+namespace LocomotionStateMachine // Or you can type: using LocomotionStateMachine
 {
     public class Forwarding : LocomotionState
     {

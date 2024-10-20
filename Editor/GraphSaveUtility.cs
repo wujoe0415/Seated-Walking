@@ -4,8 +4,6 @@ using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor;
 using UnityEngine;
-using System;
-using UnityEngine.UIElements;
 
 namespace LocomotionStateMachine
 {

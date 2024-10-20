@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22bc08d176f66394bbb27891baf3129a, type: 3}
-  m_Name: DefaultSeatedWalking
+  m_Name: DefaultSeatedWalking1
   m_EditorClassIdentifier: 
   NodeLinks:
   - BaseNodeGUID: 2673a19f-744c-46f9-a2ed-b482ca09b5d4

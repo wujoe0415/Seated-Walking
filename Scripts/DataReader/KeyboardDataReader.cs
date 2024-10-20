@@ -7,12 +7,12 @@ namespace LocomotionStateMachine
 {
     public class KeyboardDataReader : MonoBehaviour, IReader
     {
-        public bool Stop = false;
-        public static Action<DeviceType, int> OnValueChange;
         public KeyCode LeftToe = KeyCode.Q;
         public KeyCode LeftHeel = KeyCode.A;
         public KeyCode RightToe = KeyCode.W;
         public KeyCode RightHeel = KeyCode.S;
+        public bool Stop = false;
+        public static Action<DeviceType, int> OnValueChange;
 
         private void Update()
         {
