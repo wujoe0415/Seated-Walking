@@ -25,8 +25,8 @@ namespace LocomotionStateMachine
             upper.Add(label);
             upper.Add(lastStateField);
             upper.style.width = 180;
+            upper.style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 0.9f);
             mainContainer.Add(upper);
-
             // Dropdown for DeviceType
             VisualElement lower = new VisualElement();
             lower.style.flexDirection = FlexDirection.Row;
@@ -41,6 +41,7 @@ namespace LocomotionStateMachine
             lower.Add(deviceLabel);
             lower.Add(deviceTypeField);
             lower.style.width = 180;
+            lower.style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 0.9f);
             mainContainer.Add(lower);
             RefreshPorts();
             RefreshExpandedState();

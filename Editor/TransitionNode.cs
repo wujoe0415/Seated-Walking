@@ -27,18 +27,22 @@ namespace LocomotionStateMachine
 
 
             Port outputPort = Port.Create<Edge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(string));
-            outputPort.portName = "Output State";
-            
+            outputPort.portName = "Output State"; 
+            outputPort.portColor = new Color(0.3f, 0.7f, 0.4f, 0.9f);
+
             outputContainer.Add(outputPort);
 
             // Dropdown for BooleanOperator selection
+            VisualElement main = new VisualElement();
             EnumField operatorField = new EnumField("Operator", Operator);
             operatorField.RegisterValueChangedCallback(evt =>
             {
                 Operator = (StateTransition.BooleanOperator)evt.newValue;
             });
-            mainContainer.Add(operatorField);
+            main.Add(operatorField);
+            main.style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 0.9f);
 
+            mainContainer.Add(main);
             var button = new Button(() => { AddInputPort(); })
             {
                 text = "Add Condition"

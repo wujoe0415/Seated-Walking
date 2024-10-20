@@ -21,6 +21,7 @@ namespace LocomotionStateMachine
             if (isEntry)
                 return;
             var inputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(string));
+            inputPort.portColor = new Color(0.3f, 0.7f, 0.4f, 0.9f);
             inputPort.portName = "Input";
             inputContainer.Add(inputPort);
                 
@@ -43,8 +44,17 @@ namespace LocomotionStateMachine
                 };
                 titleButtonContainer.Add(button);
             }
-            mainContainer.Add(textField);
+            VisualElement main = new VisualElement();
+            main.Add(textField);
+            main.style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 0.9f);
+
+            mainContainer.Add(main);
+            
             styleSheets.Add(Resources.Load<StyleSheet>("Node"));
+            
+            //mainContainer.style.backgroundColor = new Color(1, 1, 0, 0.5f);
+            //inputContainer.style.backgroundColor = new Color(0.3f, 0.3f, 0.3f, 0.5f);
+            //outputContainer.style.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
             RefreshExpandedState();
             RefreshPorts();
         }

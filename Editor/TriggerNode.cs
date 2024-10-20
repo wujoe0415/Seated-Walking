@@ -60,7 +60,8 @@ namespace LocomotionStateMachine {
             right.Add(fieldLabel2);
             right.Add(movementField2);
             fieldContainer.Add(right);
-            
+            fieldContainer.style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 0.9f);
+
             return fieldContainer;
         }
     }

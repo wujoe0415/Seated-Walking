@@ -296,6 +296,7 @@ namespace LocomotionStateMachine
             LocomotionNode node = new LocomotionNode("ENTRY", "ENTRYPOINT", true, false);
             var generatedPort = GetPortInstance(node, Direction.Output);
             generatedPort.portName = "Root";
+            generatedPort.portColor = new Color(0.3f, 0.8f, 0.4f, 0.9f);
             node.outputContainer.Add(generatedPort);
 
             node.capabilities &= ~Capabilities.Movable;

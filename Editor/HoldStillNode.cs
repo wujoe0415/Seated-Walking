@@ -13,7 +13,8 @@ namespace LocomotionStateMachine
         {
             styleSheets.Add(Resources.Load<StyleSheet>("ConditionNode"));
             base.title = "Hold Still";
-            mainContainer.Add(CreateMovementEnumeratorUI());
+            VisualElement main = new VisualElement();
+            main.Add(CreateMovementEnumeratorUI());
             // Create a new FloatField and set its initial value
             
             FloatField floatField = new FloatField("Hold Still Duration");
@@ -26,9 +27,11 @@ namespace LocomotionStateMachine
             {
                 base.Condition.Duration = evt.newValue;
             });
+            main.Add(floatField);
+            main.style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 0.9f);
 
             // Add the FloatField to the node's main container
-            mainContainer.Add(floatField);
+            mainContainer.Add(main);
 
             RefreshPorts();
             RefreshExpandedState();
@@ -74,7 +77,6 @@ namespace LocomotionStateMachine
             right.Add(fieldLabel2);
             right.Add(movementField2);
             fieldContainer.Add(right);
-
             return fieldContainer;
         }
     }
